@@ -168,29 +168,36 @@ def gauss_elimination(A, b , n, tol, scaling = False):
       for j in range(1,n) :
         if abs(A[i][j]) > s[i]:
           s[i] = abs(A[i][j])
-    if b is not None:
-      temp = forward_elimination(A, b, s, n, tol, steps)  # forward elimination
-      if temp != -1:             # If not singular
-        return (back_substitution(A, b, n)  , steps)   # back substitution
-      else:
-        return None # Indicate singular matrix
-    else: # b is None
-      temp = forward_elimination(A, None, s, n, tol, steps)  # forward elimination
-      if temp != -1:
-        return (A , steps) # Return the modified A if b is None
-      else:
-        return None # Indicate singular matrix
+    temp = forward_elimination(A, b, s, n, tol, steps)  # forward elimination
+    
   else: # no scalling
-      if b is not None:
-        temp = forward_elimination(A, b, None, n, tol, steps)  # forward elimination, passing None for s
-        if temp != -1:             # If not singular
-          return (back_substitution(A, b, n), steps)    # back substitution
-        else:
-          return None # Indicate singular matrix
-      else: # b is None
-        temp = forward_elimination(A, None, None, n, tol, steps)  # forward elimination
-        if temp != -1:
-          return (A, steps) # Return the modified A if b is None
-        else:
-          return None # Indicate singular matrix
+    temp = forward_elimination(A, b, None, n, tol, steps)  # forward elimination, passing None for s
+      
+    # If forward elimination returned singular pivot
+    if temp == -1:
+        return None
+    
+    rankA = 0
+    rankAb = 0
+
+    for i in range(n):
+        if not np.allclose(A[i], 0, atol=1e-12):
+            rankA += 1
+        if b is not None:
+            if not np.allclose(np.append(A[i], b[i]), 0, atol=1e-12):
+                rankAb += 1
+
+    # no solution
+    if b is not None and rankA < rankAb:
+        return None
+
+    # infinite number of solutions
+    if rankA < n:
+        return 2
+
+    # Unique solution
+    if b is not None:
+        return (back_substitution(A, b, n), steps)
+    else:
+        return (A, steps)
 
