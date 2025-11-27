@@ -1,93 +1,152 @@
 import numpy as np
+import copy
 from src.utils.precision_rounding import toDecimal, toFloats, intializeContext
 
 
-def Pivoting(A, b, s, n, k):
-    """Partial pivoting for Decimal precision"""
-    if s is not None:
-        # Find pivot with largest scaled value
-        pivot = k
-        for i in range(k+1, n):
-            if abs(A[i][k] / s[i]) > abs(A[pivot][k] / s[pivot]):
-                pivot = i
-    else:
-        # Find pivot with largest absolute value
-        pivot = k
-        for i in range(k+1, n):
-            if abs(A[i][k]) > abs(A[pivot][k]):
-                pivot = i
+def Pivoting(A, b, s, n, k, steps):
+# A: Coef. of matrix A; 2-D array
+# b: Coef. of vector b; 1-D array it is None if i didn't pass one
+# n: Dimension of the system of equations
+# s: n-element array for storing scaling factors
+# k: is the row we are in now
+
+  # initializing p (our pivoting row) with the value of k
+  p = k     
     
-    # Swap rows
-    if pivot != k:
-        A[k], A[pivot] = A[pivot], A[k]
-        if b is not None:
-            b[k], b[pivot] = b[pivot], b[k]
-        if s is not None:
-            s[k], s[pivot] = s[pivot], s[k]
+  if s is not None:
 
-def forward_elimination(A, b, s, n, tol):
-  """
-  A: Coef. of matrix A; 2-D array
-  b: Coef. of vector b; 1-D array it is None if i didn't pass one
-  n: Dimension of the system of equations
-  tol: Tolerance; smallest possible scaled pivot allowed
-  s: n-element array for storing scaling factors
-  """
+    # Finding the largest scaled coefficient in column k
+    big = abs(A[k][k] / s[k])
+    for i in range(k+1,n) :
+      dummy = abs(A[i][k] / s[i]) # dummy number for the scaled value
+      if dummy > big:
+        big = dummy
+        p = i # new pivoting row
 
-  if s is not None and b is not None:
-    for k  in range(n-1):
-      Pivoting(A, b, s, n, k) # Partial Pivoting
-      if abs(A[k][k] / s[k]) < tol:  # Check for singularity
-        return -1
-      for i in range(k+1,n):
-        factor = A[i][k] / A[k][k]
-        for j in range(k,n): # Changed range from k+1 to k
-          A[i][j] = A[i][j] - factor * A[k][j]
-        b[i] = b[i] - factor * b[k]
+    # Swap row p and row k if p != k
+    if p != k:
+      # Swaping row p and row k
+      
+      steps.append("A[" + str(p) + "] <-> A[" + str(k) + "]")
+      
+      for j in range(k,n) :
+        dummy = A[p][j]
+        A[p][j] = A[k][j]
+        A[k][j] = dummy
+      if b is not None:
+        dummy = b[p]
+        b[p] = b[k]
+        b[k] = dummy
+        steps.append((copy.deepcopy(A), copy.deepcopy(b)))
+      else:
+        steps.append(copy.deepcopy(A))
+        
+      dummy = s[p]
+      s[p] = s[k]
+      s[k] = dummy
+  else:
+  # Finding the largest coefficient in column k
+    big = abs(A[k][k])
+    for i in range(k+1,n) :
+      dummy = abs(A[i][k] ) # dummy number for the  value
+      if dummy > big:
+        big = dummy
+        p = i # new pivoting row
 
-    if abs(A[n-1][n-1]/s[n-1]) < tol: # Check for singularity
-      return -1
-  elif s is None and b is not None: # no scaling
-    for k  in range(n-1):
-      Pivoting(A, b, None, n, k) # Partial Pivoting
-      if abs(A[k][k]) < tol:
-        return -1
-      for i in range(k+1,n):
-        factor = A[i][k] / A[k][k]
-        for j in range(k,n): # Changed range from k+1 to k
-          A[i][j] = A[i][j] - factor * A[k][j]
-        b[i] = b[i] - factor * b[k]
+    # Swap row p and row k if p != k
+    if p != k:
+      steps.append("A[" + str(p) + "] <-> A[" + str(k) + "]")
+      for j in range(k,n) :
+        dummy = A[p][j]
+        A[p][j] = A[k][j]
+        A[k][j] = dummy
+      if b is not None:
+        dummy = b[p]
+        b[p] = b[k]
+        b[k] = dummy
+        steps.append((copy.deepcopy(A), copy.deepcopy(b)))
+      else:
+        steps.append(copy.deepcopy(A))
 
-    if abs(A[n-1][n-1]) < tol: # Check for singularity
-      return -1
-  elif s is not None and b is None:
-    for k  in range(n-1):
-      Pivoting(A, None, s, n, k) # Partial Pivoting
-      if abs(A[k][k] / s[k]) < tol:  # Check for singularity
-        return -1
-      for i in range(k+1,n):
-        factor = A[i][k] / A[k][k]
-        for j in range(k,n): # Changed range from k+1 to k
-          A[i][j] = A[i][j] - factor * A[k][j]
 
-    if abs(A[n-1][n-1]/s[n-1]) < tol: # Check for singularity
-      return -1
-  else: # no scaling, b is None
-    for k  in range(n-1):
-      Pivoting(A, None, None, n, k) # Partial Pivoting
-      if abs(A[k][k]) < tol:
-        return -1
-      for i in range(k+1,n):
-        factor = A[i][k] / A[k][k]
-        for j in range(k,n): # Changed range from k+1 to k
-          A[i][j] = A[i][j] - factor * A[k][j]
+def forward_elimination(A, b, s, n, tol, steps):
+    """
+    A: Coef. of matrix A; 2-D array
+    b: Coef. of vector b; 1-D array it is None if i didn't pass one
+    n: Dimension of the system of equations
+    tol: Tolerance; smallest possible scaled pivot allowed
+    s: n-element array for storing scaling factors
+    """
+    if s is not None and b is not None:
+        for k in range(n-1):
+            Pivoting(A, b, s, n, k, steps) # Partial Pivoting
+            if abs(A[k][k] / s[k]) < tol: # Check for singularity
+                return -1
+            for i in range(k+1, n):
+                factor = A[i][k] / A[k][k]
+                steps.append(f"A[{i}] -> A[{i}] + {-factor} * A[{k}]")
+                for j in range(k, n):
+                    A[i][j] = A[i][j] - factor * A[k][j]
+                b[i] = b[i] - factor * b[k]
+                steps.append((copy.deepcopy(A), copy.deepcopy(b)))
+        
+        if abs(A[n-1][n-1] / s[n-1]) < tol:
+            return -1
+    elif s is None and b is not None: # no scaling
+        for k in range(n-1):
+            Pivoting(A, b, None, n, k, steps)
+            if abs(A[k][k]) < tol:
+                return -1
+            for i in range(k+1, n):
+                factor = A[i][k] / A[k][k]
+                steps.append(f"A[{i}] -> A[{i}] + {-factor} * A[{k}]")
+                for j in range(k, n):
+                    A[i][j] = A[i][j] - factor * A[k][j]
+                b[i] = b[i] - factor * b[k]
+                steps.append((copy.deepcopy(A), copy.deepcopy(b)))
+        
+        if abs(A[n-1][n-1]) < tol:
+            return -1
 
-    if abs(A[n-1][n-1]) < tol: # Check for singularity
-      return -1
-  return 0 # Return 0 for successful elimination
+    elif s is not None and b is None:
+        for k in range(n-1):
+            Pivoting(A, None, s, n, k, steps)
+            if abs(A[k][k] / s[k]) < tol:
+                return -1
+            for i in range(k+1, n):
+                factor = A[i][k] / A[k][k]
+                if abs(factor) < tol:
+                    continue
+                steps.append(f"A[{i}] -> A[{i}] + {-factor} * A[{k}]")
+                for j in range(k, n):
+                    A[i][j] = A[i][j] - factor * A[k][j]
+                steps.append(copy.deepcopy(A))
+        
+        if abs(A[n-1][n-1] / s[n-1]) < tol:
+            return -1
+
+    else:
+        for k in range(n-1):
+            Pivoting(A, None, None, n, k, steps)
+            if abs(A[k][k]) < tol:
+                return -1
+            for i in range(k+1, n):
+                factor = A[i][k] / A[k][k]
+                if abs(factor) < tol:
+                    continue
+                steps.append(f"A[{i}] -> A[{i}] + {-factor} * A[{k}]")
+                for j in range(k, n):
+                    A[i][j] = A[i][j] - factor * A[k][j]
+                steps.append(copy.deepcopy(A))
+        
+        if abs(A[n-1][n-1]) < tol:
+            return -1
+
+    return 0
+
      
 
-def backward_elimination(A, b, s, n, tol):
+def backward_elimination(A, b, s, n, tol, steps):
     """  
     Parameters:
     A: Coefficient matrix (upper triangular after forward elimination); 2-D array
@@ -98,66 +157,94 @@ def backward_elimination(A, b, s, n, tol):
     """
     
     if s is not None and b is not None:
-        for k in range(n-1, 0, -1):  # Start from last row, go up to row 1
-            if abs(A[k][k] / s[k]) < tol:  # Check for singularity
-                return -1
-            for i in range(k-1, -1, -1):  # Eliminate above pivot
-                factor = A[i][k] / A[k][k]
-                A[i][k] = 0.0  # Will become zero
-                b[i] = b[i] - factor * b[k]
-        
-        # Normalize diagonal to 1 and scale solution
-        for i in range(n):
-            if abs(A[i][i] / s[i]) < tol:
-                return -1
-            b[i] = b[i] / A[i][i]
-            A[i][i] = 1.0
-            
-    elif s is None and b is not None:  # No scaling
-        for k in range(n-1, 0, -1):
-            if abs(A[k][k]) < tol:  # Check for singularity
-                return -1
-            for i in range(k-1, -1, -1):
-                factor = A[i][k] / A[k][k]
-                A[i][k] = 0.0
-                b[i] = b[i] - factor * b[k]
-        
-        for i in range(n):
-            if abs(A[i][i]) < tol:
-                return -1
-            b[i] = b[i] / A[i][i]
-            A[i][i] = 1.0
-            
-    elif s is not None and b is None:  # With scaling, no b vector
         for k in range(n-1, 0, -1):
             if abs(A[k][k] / s[k]) < tol:
                 return -1
             for i in range(k-1, -1, -1):
                 factor = A[i][k] / A[k][k]
-                A[i][k] = 0.0
+                if abs(factor) < tol:
+                    continue
+                steps.append(f"A[{i}] -> A[{i}] + {-factor} * A[{k}]")
+                A[i][k] = 0
+                b[i] = b[i] - factor * b[k]
+                steps.append((copy.deepcopy(A), copy.deepcopy(b)))
         
+        # Normalize diagonal
         for i in range(n):
             if abs(A[i][i] / s[i]) < tol:
                 return -1
-            A[i][i] = 1.0
-            
-    else:  # No scaling, no b vector
+            factor = A[i][i]
+            steps.append(f"A[{i}] -> A[{i}] / {factor}")
+            b[i] = b[i] / A[i][i]
+            A[i][i] = 1
+            steps.append((copy.deepcopy(A), copy.deepcopy(b)))
+    
+    elif s is None and b is not None:
         for k in range(n-1, 0, -1):
             if abs(A[k][k]) < tol:
                 return -1
             for i in range(k-1, -1, -1):
                 factor = A[i][k] / A[k][k]
-                A[i][k] = 0.0
+                if abs(factor) < tol:
+                    continue
+                steps.append(f"A[{i}] -> A[{i}] + {-factor} * A[{k}]")
+                A[i][k] = 0
+                b[i] = b[i] - factor * b[k]
+                steps.append((copy.deepcopy(A), copy.deepcopy(b)))
         
         for i in range(n):
             if abs(A[i][i]) < tol:
                 return -1
-            A[i][i] = 1.0
+            factor = A[i][i]
+            steps.append(f"A[{i}] -> A[{i}] / {factor}")
+            b[i] = b[i] / A[i][i]
+            A[i][i] = 1
+            steps.append((copy.deepcopy(A), copy.deepcopy(b)))
     
-    return 0  # Success
+    elif s is not None and b is None:
+        for k in range(n-1, 0, -1):
+            if abs(A[k][k] / s[k]) < tol:
+                return -1
+            for i in range(k-1, -1, -1):
+                factor = A[i][k] / A[k][k]
+                if abs(factor) < tol:
+                    continue
+                steps.append(f"A[{i}] -> A[{i}] + {-factor} * A[{k}]")
+                A[i][k] = 0
+                steps.append(copy.deepcopy(A))
+        
+        for i in range(n):
+            if abs(A[i][i] / s[i]) < tol:
+                return -1
+            factor = A[i][i]
+            steps.append(f"A[{i}] -> A[{i}] / {factor}")
+            A[i][i] = 1
+            steps.append(copy.deepcopy(A))
+    
+    else:
+        for k in range(n-1, 0, -1):
+            if abs(A[k][k]) < tol:
+                return -1
+            for i in range(k-1, -1, -1):
+                factor = A[i][k] / A[k][k]
+                if abs(factor) < tol:
+                    continue
+                steps.append(f"A[{i}] -> A[{i}] + {-factor} * A[{k}]")
+                A[i][k] = 0
+                steps.append(copy.deepcopy(A))
+        
+        for i in range(n):
+            if abs(A[i][i]) < tol:
+                return -1
+            factor = A[i][i]
+            steps.append(f"A[{i}] -> A[{i}] / {factor}")
+            A[i][i] = 1
+            steps.append(copy.deepcopy(A))
+    
+    return 0
 
 
-def gauss_jordan(A, b, scaling, n, tol):
+def gauss_jordan(A, b, scaling, n, tol, significantFigs = 7 , rounding = True):
     """
     Parameters:
     A: Coefficient matrix; 2-D array
@@ -166,6 +253,7 @@ def gauss_jordan(A, b, scaling, n, tol):
     n: Dimension of the system
     tol: Tolerance for singularity check
     """
+    intializeContext(significantFigs, rounding)
 
     A = toDecimal(A)
     b = toDecimal(b)
@@ -178,16 +266,25 @@ def gauss_jordan(A, b, scaling, n, tol):
                 if abs(A[i][j]) > s[i]:
                     s[i] = abs(A[i][j])
 
+    steps = []    
+    # Store initial state
+    if b is not None:
+        steps.append((copy.deepcopy(A), copy.deepcopy(b)))
+    else:
+        steps.append(copy.deepcopy(A))
     
     # Forward elimination
-    result = forward_elimination(A, b, s, n, tol)
-    if result == -1:
-        return None  # Singular or ill-conditioned matrix
-    
-    # Backward elimination
-    result = backward_elimination(A, b, s, n, tol)
+    result = forward_elimination(A, b, s, n, tol, steps)
     if result == -1:
         return None
     
-    return b  # Solution is now in b vector
+    # Backward elimination
+    result = backward_elimination(A, b, s, n, tol, steps)
+    if result == -1:
+        return None
+    
+    if b is not None:
+        return (b, steps)
+    else:
+        return (A, steps)
 
