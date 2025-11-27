@@ -5,6 +5,7 @@ from typing import List, Optional
 import uvicorn
 from Controller.SolverBackend import SolverBackend
 import numpy as np
+from decimal import Decimal
 
 app = FastAPI()
 solver = SolverBackend()
@@ -20,6 +21,8 @@ app.add_middleware(
 def make_jsonable(obj):
     if isinstance(obj, np.ndarray):
         return obj.tolist()
+    if isinstance(obj, Decimal):
+        return float(obj)
     if isinstance(obj, dict):
         return {k: make_jsonable(v) for k, v in obj.items()}
     if isinstance(obj, list):

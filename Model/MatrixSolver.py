@@ -192,7 +192,7 @@ class MatrixSolver:
                 # Relaxation formula
                 x[i] = relax*sum_val/A[i][i] + (1-relax)*oldX
 
-                if (belowTolerance and x[i] != 0) :
+                if (x[i] != 0) :
                     estimatedError = abs(float((x[i]-oldX)/x[i])) * 100
                     estimatedError = float(estimatedError)
                     if(estimatedError > ErrorTolerance):
@@ -202,7 +202,7 @@ class MatrixSolver:
                 'type' : 'iter',
                 'k':iteration,
                 'x_vec' : toFloats(x),
-                'error' : float(maxError)
+                'error' : MatrixSolver._fmt(maxError, significantFigs)
             }        
 
             steps.append(details)
