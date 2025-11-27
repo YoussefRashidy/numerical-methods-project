@@ -55,6 +55,86 @@ class MatrixSolver:
         return lower, steps
     
 
+    # Jacobi with relaxation for improved convergence (called weighted Jacobi)
+    # the parameter n can be removed as we can get the no of vars from the npArray
+    @staticmethod
+    def Jacobi_noNorm(A,b,x,maxIterations,ErrorTolerance,relax=1 , significantFigs = 7 , rounding = True) :
+        # Setting up signifcant figs and rounding/chopping
+        intializeContext(significantFigs,rounding)
+        #Copying the arrays to avoid modifying original arrays
+        A = A.copy()
+        b = b.copy()
+        x = x.copy()
+        n = len(b)
+        #converting floats to decimals 
+        A = toDecimal(A)
+        b = toDecimal(b)
+        x = toDecimal(x)
+        relax = decimal.Decimal(str(relax))
+        #Array to hold new values
+        xNew = np.zeros(n,dtype=object)
+        #List to hold iteration details
+        steps = []
+
+        if(MatrixSolver.isDiagonalyDominant(A) ) :
+            steps.append('The matrix is diagonaly dominant')
+        else :
+            steps.append('The matrix is not diagonaly dominant')
+
+        # Calculating first iteration before applying relaxation    
+        for i in range(n) :
+            sum = b[i]
+            for j in range(n) :
+                if(i==j) :
+                    continue
+                sum -= A[i][j] * x[j]
+            xNew[i] = sum/A[i][i]
+        x = xNew.copy()
+        # Storing details of first iteration    
+        details = {
+                'type': 'iter',
+                'k' : 1,
+                'x_vec' : toFloats(x),
+                'error' : '_'
+            }
+        steps.append(details)
+        iteration = 2
+        # Loop until convergence or max iterations reached 
+        while (True) :
+            belowTolerance = True
+            maxError = decimal.Decimal('0')
+            for i in range(n) :
+                oldX = x[i]
+                sum = b[i]
+                for j in range(n) :
+                    if(i==j) :
+                        continue
+                    sum -= A[i][j] * x[j]
+                xNew[i] = relax*sum/A[i][i] + (1-relax)*oldX
+                if (belowTolerance and xNew[i] != 0) :
+                    estimatedError = abs((xNew[i]-oldX)/xNew[i]) * 100
+                    maxError = max(maxError, estimatedError)
+                    if(estimatedError > ErrorTolerance):
+                        belowTolerance = False
+            details = {
+                'type' : 'iter',
+                'k':iteration,
+                'x_vec' : toFloats(x),
+                'error' : float(maxError)
+            }      
+            steps.append(details)
+            iteration+=1
+            x = xNew.copy()
+            
+            if belowTolerance:
+                break;
+        
+            if iteration > maxIterations:
+                steps.append(f"Reached max iterations ({maxIterations}) without full convergence, final error = {float(maxError)}")
+                break
+
+        return toFloats(xNew) , steps
+
     @staticmethod
     def GaussSeidel_noNorm(A: np.array, b: np.array, x , maxIterations,ErrorTolerance,relax=1, significantFigs = 7 , rounding = True) :
         # Setting up signifcant figs and rounding/chopping
@@ -129,7 +209,11 @@ class MatrixSolver:
 
             iteration+=1
             
-            if(belowTolerance or iteration >= maxIterations):
+            if belowTolerance:
+                break;
+        
+            if iteration > maxIterations:
+                steps.append(f"Reached max iterations ({maxIterations}) without full convergence, final error = {float(maxError)}")
                 break
 
         # x = toFloats(x).tolist()

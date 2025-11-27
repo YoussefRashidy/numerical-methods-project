@@ -39,7 +39,7 @@ class SolverBackend:
             elif method == "Jacobi Iteration":
                 if tol is None or max_iter is None:
                     raise ValueError("Tolerance and Max Iterations required for Jacobi.")
-                x, steps = self.solve_iterative(A, b, x_init, tol, max_iter, sig_figs, method="Jacobi")
+                x, steps = MatrixSolver.Jacobi_noNorm(A, b, x_init, max_iter, tol, significantFigs=sig_figs)
                 L, U = None, None
                 
             elif method == "Gauss-Seidel Iteration":
