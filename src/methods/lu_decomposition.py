@@ -78,8 +78,8 @@ def LU_decomposition(A, tol=1e-12, scaling=False):
 
 
 
-def solve_from_LU(A, b):
-    L, U, P, er = LU_decomposition(A)
+def solve_from_LU(A, b, tol, scaling):
+    L, U, P, er = LU_decomposition(A, tol, scaling)
     if er == -1:
         return None  # Singular matrix
     n = len(A)
@@ -162,8 +162,8 @@ def Crout(A, tol=1e-12, scaling=False):
 
 
 
-def solve_from_Crout(A, b):
-    L, U, P, er = Crout(A)
+def solve_from_Crout(A, b, tol, scaling):
+    L, U, P, er = Crout(A, tol, scaling)
     if er == -1:
         return None
     n = len(A)
@@ -172,3 +172,4 @@ def solve_from_Crout(A, b):
     y = forward_substitution(L, b_permuted, n)
     x = back_substitution(U, y, n)
     return x
+
