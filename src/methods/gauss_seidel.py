@@ -1,6 +1,6 @@
 from src.utils.precision_rounding import toDecimal, toFloats, intializeContext
 import decimal
-
+import numpy as np
 def isDiagonalyDominant(A) :
     #Check if Matrix A is diagonaly dominant 
     dim = A.shape
@@ -34,6 +34,11 @@ def GaussSeidel_noNorm(A,b,n,x,maxIterations,ErrorTolerance,relax , significantF
     
     #List to hold iteration details
     iteration_details = []
+    #Check for diagonaly dominant matrix
+    if(isDiagonalyDominant(A) ) :
+        isDominant = 'The matrix is diagonaly dominant'
+    else :
+        isDominant = 'The matrix is not diagonaly dominant'    
     # Calculating first iteration before applying relaxation    
     for i in range(n) :
         sum = b[i]
@@ -76,4 +81,12 @@ def GaussSeidel_noNorm(A,b,n,x,maxIterations,ErrorTolerance,relax , significantF
         iteration_details.append(details)
         if(belowTolerance or iteration >= maxIterations) :
             break
-    return toFloats(x), iteration_details            
+    lines = [isDominant]
+    for d in iteration_details :
+        s = (
+            f"Iteration: {d['iteration']}\n"
+            f"  xNew: {d['xNew']}\n"
+            f"  maxError: {d['maxError']}"
+        )
+        lines.append(s)    
+    return toFloats(x), lines
