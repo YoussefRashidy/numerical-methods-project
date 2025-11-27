@@ -1,5 +1,6 @@
 from src.utils.precision_rounding import toDecimal, toFloats, intializeContext
 import decimal
+import numpy as np
 
 def isDiagonalyDominant(A) :
     #Check if Matrix A is diagonaly dominant 
@@ -22,7 +23,7 @@ def isDiagonalyDominant(A) :
             
 # Jacobi with relaxation for improved convergence (called weighted Jacobi)
 # the parameter n can be removed as we can get the no of vars from the npArray
-def Jacobi_noNorm(A,b,n,x,maxIterations,ErrorTolerance,relax = 1 , significantFigs = 7 , rounding = True) :
+def Jacobi_noNorm(A,b,n,x,maxIterations,ErrorTolerance,relax , significantFigs = 7 , rounding = True) :
     # Setting up signifcant figs and rounding/chopping
     intializeContext(significantFigs,rounding)
     #Copying the arrays to avoid modifying original arrays
@@ -38,6 +39,10 @@ def Jacobi_noNorm(A,b,n,x,maxIterations,ErrorTolerance,relax = 1 , significantFi
     xNew = np.zeros(n,dtype=object)
     #List to hold iteration details
     iteration_details = []
+    if(isDiagonalyDominant(A) ) :
+        isDominant = 'The matrix is diagonaly dominant'
+    else :
+        isDominant = 'The matrix is not diagonaly dominant' 
     # Calculating first iteration before applying relaxation    
     for i in range(n) :
         sum = b[i]
@@ -82,4 +87,12 @@ def Jacobi_noNorm(A,b,n,x,maxIterations,ErrorTolerance,relax = 1 , significantFi
         x = xNew.copy()
         if(belowTolerance or iteration >= maxIterations) :
             break
-    return toFloats(xNew) , iteration_details            
+    lines = [isDominant]
+    for d in iteration_details :
+        s = (
+            f"Iteration: {d['iteration']}\n"
+            f"  xNew: {d['xNew']}\n"
+            f"  maxError: {d['maxError']}"
+        )
+        lines.append(s)        
+    return toFloats(xNew) , lines
