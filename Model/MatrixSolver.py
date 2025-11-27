@@ -1,49 +1,151 @@
 import math
+from src.utils.precision_rounding import toDecimal, toFloats, intializeContext
+import decimal
+import numpy as np
+
 class MatrixSolver:
-    def cholesky_decomposition(self, matrix):
-        """Decomposes symmetric, positive-definite matrix A into L * L.T"""
+
+    @staticmethod
+    def isDiagonalyDominant(A):
+        #Check if Matrix A is diagonaly dominant 
+        num_rows = len(A)
+        num_columns = len(A[0])
+        # Flags to check system
+        at_least_one_strictly_greater = None 
+        if(num_rows != num_columns) : raise Exception("Matrix must be square")
+        for i in range(num_rows) :
+            nonDiagonalSum = 0 
+            for j in range(num_rows) :
+                if(j==i) : continue 
+                nonDiagonalSum += abs(A[i][j]) 
+            if(A[i][i] > nonDiagonalSum) :
+                at_least_one_strictly_greater = True
+            elif(A[i][i] == nonDiagonalSum) :
+                if(at_least_one_strictly_greater == None) : at_least_one_strictly_greater = False
+            else :
+                return False    
+        return at_least_one_strictly_greater
+    
+
+    @staticmethod
+    def cholesky_decomposition(matrix, sig_figs):
         n = len(matrix)
         lower = [[0.0] * n for _ in range(n)]
         steps = [] 
-
-        steps.append("<h3>Step 1: Cholesky Decomposition</h3>")
-        steps.append(f"<p style='font-size: 16px;'>Starting Matrix A:</p>{self._matrix_to_html(matrix)}")
-
+        
         for i in range(n):
             for j in range(i + 1):
                 sum_val = 0.0
-                
-                if j == i: # Diagonal
-                    steps.append(f"<hr><b>Calculating Diagonal L<sub>{i},{i}</sub>:</b>") 
-                    for k in range(j):
-                        sum_val += lower[j][k]**2
-                    
-                    temp = matrix[j][j] - sum_val
-                    
-                    formula = f"L<sub>{i},{i}</sub> = &radic;(A<sub>{i},{i}</sub> - &Sigma; L<sub>{i},k</sub><sup>2</sup>)"
-                    calc = f"&radic;({matrix[j][j]} - {sum_val:.4f})"
-                    # CHANGED: Added font-size: 16px
-                    steps.append(f"<p style='color:#bdc3c7; font-size: 16px;'><i>Formula:</i> {formula}<br><i>Calc:</i> {calc}</p>")
-
-                    if temp <= 0:
-                        raise ValueError("Matrix is not Positive Definite (Non-positive pivot encountered)!")
-                    
-                    lower[j][j] = math.sqrt(temp)
-                    steps.append(f"<b>Result:</b> L<sub>{i},{i}</sub> = {lower[j][j]:.4f}") 
-                
-                else: # Off-Diagonal
-                    steps.append(f"<hr><b>Calculating Off-Diagonal L<sub>{i},{j}</sub>:</b>") 
-                    for k in range(j):
-                        sum_val += lower[i][k] * lower[j][k]
-                    
-                    formula = f"L<sub>{i},{j}</sub> = (A<sub>{i},{j}</sub> - &Sigma; L<sub>{i},k</sub> &middot; L<sub>{j},k</sub>) / L<sub>{j},{j}</sub>"
-                    calc = f"({matrix[i][j]} - {sum_val:.4f}) / {lower[j][j]:.4f}"
-                    # CHANGED: Added font-size: 16px
-                    steps.append(f"<p style='color:#bdc3c7; font-size: 16px;'><i>Formula:</i> {formula}<br><i>Calc:</i> {calc}</p>")
-                    
+                if j == i: 
+                    for k in range(j): sum_val += lower[j][k]**2
+                    val = matrix[j][j] - sum_val
+                    if val <= 0: raise ValueError("Matrix is not Positive Definite!")
+                    lower[j][j] = math.sqrt(val)
+                    steps.append({"type": "diag", "i": i, "j": j, 
+                        "formula": f"L_{{{i}{i}}} = \\sqrt{{A_{{{i}{i}}} - \\sum L_{{{i}k}}^2}}",
+                        "res": MatrixSolver._fmt(lower[j][j], sig_figs)})
+                else: 
+                    for k in range(j): sum_val += lower[i][k] * lower[j][k]
                     lower[i][j] = (matrix[i][j] - sum_val) / lower[j][j]
-                    steps.append(f"<b>Result:</b> L<sub>{i},{j}</sub> = {lower[i][j]:.4f}") 
-                
-                steps.append(f"<br>Current L Matrix:{self._matrix_to_html(lower, highlight_cell=(i,j))}")
-
+                    steps.append({"type": "off", "i": i, "j": j, 
+                        "formula": f"L_{{{i}{j}}} = ...", 
+                        "res": MatrixSolver._fmt(lower[i][j], sig_figs)})
         return lower, steps
+    
+
+    @staticmethod
+    def GaussSeidel_noNorm(A: np.array, b: np.array, x , maxIterations,ErrorTolerance,relax=1, significantFigs = 7 , rounding = True) :
+        # Setting up signifcant figs and rounding/chopping
+        intializeContext(significantFigs,rounding)
+        
+        #converting floats to decimals 
+        A = toDecimal(A)
+        b = toDecimal(b)
+        if x is not None:
+            x = toDecimal(x)
+        n = len(b)
+        relax = decimal.Decimal(str(relax))
+        
+        #List to hold iteration details
+        steps = []
+
+        #Check for diagonaly dominant matrix
+        if(MatrixSolver.isDiagonalyDominant(A) ) :
+            steps.append('The matrix is diagonaly dominant')
+        else :
+            steps.append('The matrix is not diagonaly dominant')
+
+        
+        # Calculating first iteration before applying relaxation    
+        for i in range(n) :
+            sum_val = b[i]
+            for j in range(n) :
+                if(i==j) :
+                    continue
+                sum_val -= A[i][j] * x[j]
+
+            x[i] = sum_val / A[i][i]
+        
+        details = {
+                'type': 'iter',
+                'k' : 1,
+                'x_vec' : toFloats(x),
+                'error' : '_'
+            }     
+        
+        steps.append(details)
+        iteration = 2
+        # Loop until convergence or max iterations reached 
+        while (True) :
+            belowTolerance = True
+            maxError = 0
+            for i in range(n) :
+                oldX = x[i]
+                sum_val = b[i]
+                for j in range(n) :
+                    if(i==j) :
+                        continue
+                    sum_val -= A[i][j] * x[j]
+
+                # Relaxation formula
+                x[i] = relax*sum_val/A[i][i] + (1-relax)*oldX
+
+                if (belowTolerance and x[i] != 0) :
+                    estimatedError = abs(float((x[i]-oldX)/x[i])) * 100
+                    estimatedError = float(estimatedError)
+                    if(estimatedError > ErrorTolerance):
+                        belowTolerance = False
+                    maxError = max(maxError, estimatedError)
+            details = {
+                'type' : 'iter',
+                'k':iteration,
+                'x_vec' : toFloats(x),
+                'error' : float(maxError)
+            }        
+
+            steps.append(details)
+
+            iteration+=1
+            
+            if(belowTolerance or iteration >= maxIterations):
+                break
+
+        # x = toFloats(x).tolist()
+        
+        return toFloats(x), steps
+    
+    @staticmethod
+    def _fmt_vec(vec, sig_figs):
+        return "[" + ", ".join([MatrixSolver._fmt(v, sig_figs) for v in vec]) + "]"
+    
+    # --- Formatting Helper ---
+    @staticmethod
+    def _fmt(val, sig_figs=4):
+        """Formats a number to the specified significant figures."""
+        if val == 0: return "0"
+        try:
+            return f"{val:.{sig_figs}g}"
+        except:
+            return str(val)
+    
+    
