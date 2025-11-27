@@ -1,4 +1,7 @@
 import math
+from src.methods.gauss_seidel import GaussSeidel_noNorm
+from src.methods.gauss_seidel import isDiagonalyDominant
+from src.methods.Jacobi import Jacobi_noNorm
 class MatrixSolver:
     def cholesky_decomposition(self, matrix):
         """Decomposes symmetric, positive-definite matrix A into L * L.T"""
@@ -47,3 +50,15 @@ class MatrixSolver:
                 steps.append(f"<br>Current L Matrix:{self._matrix_to_html(lower, highlight_cell=(i,j))}")
 
         return lower, steps
+      # --- Added Methods ---
+    def gauss_seidel(self, A, b, x0, max_iter, tol, relax=1 , significantFigs=7 , rounding=True):
+        """Wrapper for Gauss–Seidel method."""
+        return GaussSeidel_noNorm(A, b,len(b) ,x0, max_iter, tol, relax, significantFigs, rounding)
+    
+    def jacobi(self, A, b, x0, max_iter, tol , relax=1 , significantFigs=7 , rounding=True):
+        """Wrapper for Jacobi method."""
+        return Jacobi_noNorm(A, b,len(b), x0, max_iter, tol,relax=relax , significantFigs= significantFigs , rounding = rounding)
+    
+    def is_diagonally_dominant(self, A):
+        """Check if matrix A is diagonally dominant."""
+        return isDiagonalyDominant(A)
