@@ -72,7 +72,7 @@ def Jacobi_noNorm(A,b,n,x,maxIterations,ErrorTolerance,relax , significantFigs =
                     continue
                 sum -= A[i][j] * x[j]
             xNew[i] = relax*sum/A[i][i] + (1-relax)*oldX
-            if (belowTolerance and xNew[i] != 0) :
+            if (xNew[i] != 0) :
                 estimatedError = abs((xNew[i]-oldX)/xNew[i]) * 100
                 maxError = max(maxError, estimatedError)
                 if(estimatedError > ErrorTolerance):

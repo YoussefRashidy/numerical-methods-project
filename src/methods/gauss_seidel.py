@@ -66,7 +66,7 @@ def GaussSeidel_noNorm(A,b,n,x,maxIterations,ErrorTolerance,relax , significantF
                     continue
                 sum -= A[i][j] * x[j]
             x[i] = relax*sum/A[i][i] + (1-relax)*oldX
-            if (belowTolerance and x[i] != 0) :
+            if (x[i] != 0) :
                 estimatedError = abs(float((x[i]-oldX)/x[i])) * 100
                 estimatedError = float(estimatedError)
                 if(estimatedError > ErrorTolerance):
