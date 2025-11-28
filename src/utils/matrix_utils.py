@@ -5,6 +5,10 @@ def _fmt(val, sig_figs=4):
             return f"{val:.{sig_figs}g}"
         except:
             return str(val)
+        
+
+def _fmt_vec(vec, sig_figs=4):
+    return "[" + ", ".join([_fmt(v, sig_figs) for v in vec]) + "]"
 
 def _log_matrix(A, b, sig_figs=4):
     """Helper to format the current matrix state as a clean HTML block."""
