@@ -61,7 +61,7 @@ function toggleParams() {
         paramsDiv.classList.add('hidden');
     }
 
-    if (method == "Crout Decomposition" || method == "Gauss-Jordan"){
+    if (method == "Crout Decomposition" || method == "Gauss-Jordan" || method == "Gaussian Elimination"){
         scalingDiv.classList.remove('hidden');
     }
     else{

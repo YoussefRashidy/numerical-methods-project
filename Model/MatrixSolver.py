@@ -113,11 +113,13 @@ class MatrixSolver:
                         continue
                     sum -= A[i][j] * x[j]
                 xNew[i] = relax*sum/A[i][i] + (1-relax)*oldX
-                if (belowTolerance and xNew[i] != 0) :
+                if (xNew[i] != 0) :
                     estimatedError = abs((xNew[i]-oldX)/xNew[i]) * 100
                     maxError = max(maxError, estimatedError)
                     if(estimatedError > ErrorTolerance):
                         belowTolerance = False
+            
+            x = xNew.copy()
             details = {
                 'type' : 'iter',
                 'k':iteration,
@@ -125,9 +127,10 @@ class MatrixSolver:
                 'error' : float(maxError)
             }      
             steps.append(details)
-            iteration+=1
-            x = xNew.copy()
             
+            
+            iteration+=1
+
             if belowTolerance:
                 break;
         

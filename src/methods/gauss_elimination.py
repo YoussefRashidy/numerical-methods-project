@@ -1,6 +1,7 @@
 import numpy as np
 import copy
 # from Model.MatrixSolver import MatrixSolver
+from ..utils.matrix_utils import _log_matrix
 
 def Pivoting(A, b, s, n, k, steps):
 # A: Coef. of matrix A; 2-D array
@@ -36,7 +37,7 @@ def Pivoting(A, b, s, n, k, steps):
         dummy = b[p]
         b[p] = b[k]
         b[k] = dummy
-       # steps.append((copy.deepcopy(A), copy.deepcopy(b)))
+        steps.append(_log_matrix(A, b))
       else:
         #steps.append(copy.deepcopy(A))
         pass
@@ -64,7 +65,7 @@ def Pivoting(A, b, s, n, k, steps):
         dummy = b[p]
         b[p] = b[k]
         b[k] = dummy
-        #steps.append((copy.deepcopy(A), copy.deepcopy(b)))
+        steps.append(_log_matrix(A, b))
       else:
         #steps.append(copy.deepcopy(A))
         pass
@@ -92,7 +93,7 @@ def forward_elimination(A, b, s, n, tol, steps):
         for j in range(k,n):
           A[i][j] = A[i][j] - factor * A[k][j]
         b[i] = b[i] - factor * b[k]
-        #steps.append((copy.deepcopy(A), copy.deepcopy(b)))
+        steps.append(_log_matrix(A, b))
 
     if abs(A[n-1][n-1]/s[n-1]) < tol: # Check for singularity
       return -1
@@ -111,7 +112,7 @@ def forward_elimination(A, b, s, n, tol, steps):
         for j in range(k,n):
           A[i][j] = A[i][j] - factor * A[k][j]
         b[i] = b[i] - factor * b[k]
-        # steps.append((copy.deepcopy(A), copy.deepcopy(b)))
+        steps.append(_log_matrix(A, b))
 
     if abs(A[n-1][n-1]) < tol: # Check for singularity
       return -1
