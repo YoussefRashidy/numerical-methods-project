@@ -110,7 +110,7 @@ class MatrixSolver:
         # Loop until convergence or max iterations reached 
         while (True) :
             belowTolerance = True
-            maxError = decimal.Decimal('0')
+            maxError = 0
             var_steps = []
             for i in range(n) :
                 oldX = x[i]
@@ -135,7 +135,7 @@ class MatrixSolver:
             details = {
                 'type' : 'iter',
                 'k':iteration,
-                'x_vec' : toFloats(x),
+                'x_vec' : toFloats(xNew),
                 'steps': var_steps,
                 'error' : float(maxError)
             } 
