@@ -2,6 +2,7 @@ import numpy as np
 import copy
 # from Model.MatrixSolver import MatrixSolver
 from ..utils.matrix_utils import _log_matrix, _fmt_vec
+from src.utils.precision_rounding import toDecimal, toFloats, intializeContext
 
 def Pivoting(A, b, s, n, k, steps):
 # A: Coef. of matrix A; 2-D array
@@ -181,7 +182,7 @@ def forward_substitution(A, b, n):
         x[i] = (b[i] - sum_val) / A[i][i]
     return x
 
-def gauss_elimination(A, b , n, tol=1e-12, scaling = False):
+def gauss_elimination(A, b , n, tol=1e-12, scaling = False, significantFigs = 7 , rounding = True):
   """
     Method to do gauss elimination
     Inputs:
@@ -194,9 +195,13 @@ def gauss_elimination(A, b , n, tol=1e-12, scaling = False):
       (x, A, steps)
   """
 
+  intializeContext(significantFigs, rounding)
+  A = toDecimal(A)
+  b = toDecimal(b)
+
   steps = [] # initializing the steps list
   A = copy.deepcopy(A)
-  B = copy.deepcopy(b) if b is not None else None
+  b = copy.deepcopy(b) if b is not None else None
       
   steps.append("<div class='text-slate-400 mb-2'>Starting Gaussian Elimination</div>")
       

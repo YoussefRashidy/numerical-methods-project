@@ -211,7 +211,7 @@ def backward_elimination(A, b, s, n, tol, steps):
                    "type": "calc_l",
                    "i": i,
                    "j": k,
-                   "formula": f"R_{{i}} \\leftarrow R_{{i}} - {{_fmt(factor)}} \\times R_{{k}}",
+                   "formula": f"R_{{i}} \\leftarrow R_{{i}} - ({_fmt(factor)}) \\times R_{{k}}",
                    "res": "Row updated"
                 })
                 A[i][k] = 0
@@ -262,7 +262,7 @@ def backward_elimination(A, b, s, n, tol, steps):
                    "type": "calc_l",
                    "i": i,
                    "j": k,
-                   "formula": f"R_{{i}} \\leftarrow R_{{i}} - {{_fmt(factor)}} \\times R_{{k}}",
+                   "formula": f"R_{{i}} \\leftarrow R_{{i}} - ({_fmt(factor)}) \\times R_{{k}}",
                    "res": "Row updated"
                 })
                 A[i][k] = 0
@@ -288,7 +288,7 @@ def backward_elimination(A, b, s, n, tol, steps):
                    "type": "calc_l",
                    "i": i,
                    "j": k,
-                   "formula": f"R_{{i}} \\leftarrow R_{{i}} - {{_fmt(factor)}} \\times R_{{k}}",
+                   "formula": f"R_{{i}} \\leftarrow R_{{i}} - ({_fmt(factor)}) \\times R_{{k}}",
                    "res": "Row updated"
                 })
                 A[i][k] = 0
