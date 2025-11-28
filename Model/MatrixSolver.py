@@ -82,21 +82,27 @@ class MatrixSolver:
             steps.append('The matrix is diagonaly dominant')
         else :
             steps.append('The matrix is not diagonaly dominant')
-
+        var_steps = []
         # Calculating first iteration before applying relaxation    
         for i in range(n) :
+            computation_terms = [f"{b[i]}"]  # start with b_i
             sum = b[i]
             for j in range(n) :
                 if(i==j) :
                     continue
                 sum -= A[i][j] * x[j]
+                computation_terms.append(f" - ({A[i][j]} * {x[j]})")
+            formula_str = "".join(computation_terms)
             xNew[i] = sum/A[i][i]
+            var_steps.append(f"x{i+1} = ({formula_str} / {A[i][i]}) = {xNew[i]}")
+
         x = xNew.copy()
         # Storing details of first iteration    
         details = {
                 'type': 'iter',
                 'k' : 1,
                 'x_vec' : toFloats(x),
+                'steps' : var_steps,
                 'error' : '_'
             }
         steps.append(details)
@@ -104,28 +110,35 @@ class MatrixSolver:
         # Loop until convergence or max iterations reached 
         while (True) :
             belowTolerance = True
-            maxError = decimal.Decimal('0')
+            maxError = 0
+            var_steps = []
             for i in range(n) :
                 oldX = x[i]
                 sum = b[i]
+                computation_terms = [f"{b[i]}"]  # for formula string
                 for j in range(n) :
                     if(i==j) :
                         continue
                     sum -= A[i][j] * x[j]
+                    computation_terms.append(f" - ({A[i][j]} * {x[j]})")
                 xNew[i] = relax*sum/A[i][i] + (1-relax)*oldX
                 if (xNew[i] != 0) :
                     estimatedError = abs((xNew[i]-oldX)/xNew[i]) * 100
                     maxError = max(maxError, estimatedError)
                     if(estimatedError > ErrorTolerance):
                         belowTolerance = False
-            
-            x = xNew.copy()
+                full_formula = (
+                f"x{i+1} = {relax}*(({''.join(computation_terms)}) / {A[i][i]})"
+                f" + (1-{relax})*{oldX} = {xNew[i]}"
+            )        
+                var_steps.append(full_formula)     
             details = {
                 'type' : 'iter',
                 'k':iteration,
-                'x_vec' : toFloats(x),
+                'x_vec' : toFloats(xNew),
+                'steps': var_steps,
                 'error' : float(maxError)
-            }      
+            } 
             steps.append(details)
             
             
@@ -164,18 +177,23 @@ class MatrixSolver:
 
         
         # Calculating first iteration before applying relaxation    
+        var_steps = []
         for i in range(n) :
+            computation_terms = [f"{b[i]}"]  # start with b_i
             sum_val = b[i]
             for j in range(n) :
                 if(i==j) :
                     continue
                 sum_val -= A[i][j] * x[j]
-
+                computation_terms.append(f" - ({A[i][j]} * {x[j]})")
+            formula_str = "".join(computation_terms)
             x[i] = sum_val / A[i][i]
+            var_steps.append(f"x{i+1} = ({formula_str} / {A[i][i]}) = {x[i]}")
         
         details = {
                 'type': 'iter',
                 'k' : 1,
+                'steps': var_steps,
                 'x_vec' : toFloats(x),
                 'error' : '_'
             }     
@@ -186,14 +204,17 @@ class MatrixSolver:
         while (True) :
             belowTolerance = True
             maxError = 0
+            var_steps = []
             for i in range(n) :
                 oldX = x[i]
                 sum_val = b[i]
+                computation_terms = [f"{b[i]}"]  # for formula string
                 for j in range(n) :
                     if(i==j) :
                         continue
                     sum_val -= A[i][j] * x[j]
-
+                    computation_terms.append(f" - ({A[i][j]} * {x[j]})")
+                formula_str = "".join(computation_terms)
                 # Relaxation formula
                 x[i] = relax*sum_val/A[i][i] + (1-relax)*oldX
 
@@ -203,10 +224,16 @@ class MatrixSolver:
                     if(estimatedError > ErrorTolerance):
                         belowTolerance = False
                     maxError = max(maxError, estimatedError)
+                full_formula = (
+                f"x{i+1} = {relax}*(({''.join(computation_terms)}) / {A[i][i]})"
+                f" + (1-{relax})*{oldX} = {x[i]}"
+            )
+                var_steps.append(full_formula)     
             details = {
                 'type' : 'iter',
                 'k':iteration,
                 'x_vec' : toFloats(x),
+                'steps': var_steps,
                 'error' : MatrixSolver._fmt(maxError, significantFigs)
             }        
 
