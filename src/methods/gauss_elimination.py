@@ -166,7 +166,7 @@ def back_substitution(A, b, n):
   x = [0.0 for _ in range(n)]
   x[n-1] = b[n-1] / A[n-1][n-1]
   for i in range(n-2,-1,-1):
-    sum_val = 0.0
+    sum_val = 0
     for j in range(i+1,n):
       sum_val = sum_val + A[i][j] * x[j]
     x[i] = (b[i] - sum_val) / A[i][i]
@@ -176,7 +176,7 @@ def forward_substitution(A, b, n):
     x = [0.0 for _ in range(n)]
     x[0] = b[0] / A[0][0]
     for i in range(1, n):
-        sum_val = 0.0
+        sum_val = 0
         for j in range(i):
             sum_val = sum_val + A[i][j] * x[j]
         x[i] = (b[i] - sum_val) / A[i][i]
