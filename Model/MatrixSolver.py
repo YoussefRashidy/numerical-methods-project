@@ -168,6 +168,8 @@ class MatrixSolver:
         b = toDecimal(b)
         if x is not None:
             x = toDecimal(x)
+        else:
+            x = np.zeros(len(b), dtype=object)
         n = len(b)
         relax = decimal.Decimal(str(relax))
         
@@ -184,7 +186,7 @@ class MatrixSolver:
         # Calculating first iteration before applying relaxation    
         var_steps = []
         for i in range(n) :
-            computation_terms = [f"{b[i]}"]  # start with b_i
+            computation_terms = [f"{b[i]}"]
             sum_val = b[i]
             for j in range(n) :
                 if(i==j) :
@@ -205,6 +207,7 @@ class MatrixSolver:
         
         steps.append(details)
         iteration = 2
+
         # Loop until convergence or max iterations reached 
         while (True) :
             belowTolerance = True
@@ -213,49 +216,50 @@ class MatrixSolver:
             for i in range(n) :
                 oldX = x[i]
                 sum_val = b[i]
-                computation_terms = [f"{b[i]}"]  # for formula string
+                computation_terms = [f"{b[i]}"]
                 for j in range(n) :
                     if(i==j) :
                         continue
                     sum_val -= A[i][j] * x[j]
                     computation_terms.append(f" - ({A[i][j]} * {x[j]})")
-                formula_str = "".join(computation_terms)
-                # Relaxation formula
-                x[i] = relax*sum_val/A[i][i] + (1-relax)*oldX
 
-                if (x[i] != 0) :
-                    estimatedError = abs(float((x[i]-oldX)/x[i])) * 100
+                # Relaxation formula
+                x[i] = relax * (sum_val / A[i][i]) + (1 - relax) * oldX
+
+                if x[i] != 0:
+                    estimatedError = abs(float((x[i] - oldX) / x[i])) * 100
                     estimatedError = float(estimatedError)
-                    if(estimatedError > ErrorTolerance):
+                    if estimatedError > ErrorTolerance:
                         belowTolerance = False
                     maxError = max(maxError, estimatedError)
+
                 full_formula = (
-                f"x{i+1} = {relax}*(({''.join(computation_terms)}) / {A[i][i]})"
-                f" + (1-{relax})*{oldX} = {x[i]}"
-            )
-                var_steps.append(full_formula)     
+                    f"x{i+1} = {relax}*(({''.join(computation_terms)}) / {A[i][i]})"
+                    f" + (1-{relax})*{oldX} = {x[i]}"
+                )
+                var_steps.append(full_formula)
+
             details = {
                 'type' : 'iter',
-                'k':iteration,
+                'k': iteration,
                 'x_vec' : toFloats(x),
                 'steps': var_steps,
                 'error' : MatrixSolver._fmt(maxError, significantFigs)
-            }        
+            }
 
             steps.append(details)
 
-            iteration+=1
+            iteration += 1
             
             if belowTolerance:
-                break;
+                break
         
             if iteration > maxIterations:
                 steps.append(f"Reached max iterations ({maxIterations}) without full convergence, final error = {float(maxError)}")
                 break
 
-        # x = toFloats(x).tolist()
-        
         return toFloats(x), steps
+
     
 
     @staticmethod
