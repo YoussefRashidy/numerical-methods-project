@@ -37,10 +37,10 @@ class SolverBackend:
                 x, U, steps = gauss_elimination(A, b, len(b)) # Partial implementation
                 L = None
             elif method == "Gauss-Jordan":
-                x, U, steps = gauss_jordan(A,b,scaling,len(b),1e-12)
+                x, U, steps = gauss_jordan(A,b,scaling,len(b),1e-12, sig_figs)
                 L = None
             elif method == "Crout Decomposition":
-                x, L, U, steps = solve_from_Crout(A,b,scaling)
+                x, L, U, steps = solve_from_Crout(A,b,scaling, sig_figs)
                 
             elif method == "LU Decomposition":
                 x, L, U, steps = MatrixSolver.solve_from_LU(A, b, sig_figs)

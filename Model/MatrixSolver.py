@@ -78,22 +78,22 @@ class MatrixSolver:
         #List to hold iteration details
         steps = []
 
-        if(MatrixSolver.isDiagonalyDominant(A) ) :
+        if(MatrixSolver.isDiagonalyDominant(A)) :
             steps.append('The matrix is diagonaly dominant')
         else :
             steps.append('The matrix is not diagonaly dominant')
         var_steps = []
         # Calculating first iteration before applying relaxation    
         for i in range(n) :
-            computation_terms = [f"{b[i]}"]  # start with b_i
-            sum = b[i]
+            computation_terms = [f"{b[i]}"]
+            sum_val = b[i]
             for j in range(n) :
                 if(i==j) :
                     continue
-                sum -= A[i][j] * x[j]
+                sum_val -= A[i][j] * x[j]
                 computation_terms.append(f" - ({A[i][j]} * {x[j]})")
             formula_str = "".join(computation_terms)
-            xNew[i] = sum/A[i][i]
+            xNew[i] = sum_val / A[i][i]
             var_steps.append(f"x{i+1} = ({formula_str} / {A[i][i]}) = {xNew[i]}")
 
         x = xNew.copy()
@@ -114,44 +114,49 @@ class MatrixSolver:
             var_steps = []
             for i in range(n) :
                 oldX = x[i]
-                sum = b[i]
-                computation_terms = [f"{b[i]}"]  # for formula string
+                sum_val = b[i]
+                computation_terms = [f"{b[i]}"]
                 for j in range(n) :
                     if(i==j) :
                         continue
-                    sum -= A[i][j] * x[j]
+                    sum_val -= A[i][j] * x[j]
                     computation_terms.append(f" - ({A[i][j]} * {x[j]})")
-                xNew[i] = relax*sum/A[i][i] + (1-relax)*oldX
+                xNew[i] = relax * (sum_val / A[i][i]) + (1 - relax) * oldX
                 if (xNew[i] != 0) :
-                    estimatedError = abs((xNew[i]-oldX)/xNew[i]) * 100
+                    estimatedError = abs((xNew[i] - oldX) / xNew[i]) * 100
                     maxError = max(maxError, estimatedError)
                     if(estimatedError > ErrorTolerance):
                         belowTolerance = False
+
                 full_formula = (
-                f"x{i+1} = {relax}*(({''.join(computation_terms)}) / {A[i][i]})"
-                f" + (1-{relax})*{oldX} = {xNew[i]}"
-            )        
-                var_steps.append(full_formula)     
+                    f"x{i+1} = {relax}*(({''.join(computation_terms)}) / {A[i][i]})"
+                    f" + (1-{relax})*{oldX} = {xNew[i]}"
+                )
+                var_steps.append(full_formula)
+
             details = {
                 'type' : 'iter',
                 'k':iteration,
                 'x_vec' : toFloats(xNew),
                 'steps': var_steps,
                 'error' : float(maxError)
-            } 
+            }
             steps.append(details)
-            
-            
-            iteration+=1
+
+            # Update x for next iteration (this was missing!)
+            x = xNew.copy()
+
+            iteration += 1
 
             if belowTolerance:
-                break;
+                break
         
             if iteration > maxIterations:
                 steps.append(f"Reached max iterations ({maxIterations}) without full convergence, final error = {float(maxError)}")
                 break
 
-        return toFloats(xNew) , steps
+        return toFloats(xNew), steps
+
 
     @staticmethod
     def GaussSeidel_noNorm(A: np.array, b: np.array, x , maxIterations,ErrorTolerance,relax=1, significantFigs = 7 , rounding = True) :
