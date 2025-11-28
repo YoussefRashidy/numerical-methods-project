@@ -117,8 +117,9 @@ def forward_elimination(A, b, s, n, tol, steps):
                         "formula": f"R_{{{i}}} \\leftarrow R_{{{i}}} - ({_fmt(factor)}) \\times R_{{{k}}}",
                         "res": "Row Updated"
                     })
-        for j in range(k,n):
+        for j in range(k + 1,n):
           A[i][j] = A[i][j] - factor * A[k][j]
+        A[i][k] = 0  # Explicitly set to zero
         b[i] = b[i] - factor * b[k]
         steps.append(_log_matrix(A, b))
 
@@ -136,8 +137,9 @@ def forward_elimination(A, b, s, n, tol, steps):
                         "formula": f"R_{{{i}}} \\leftarrow R_{{{i}}} - ({_fmt(factor)}) \\times R_{{{k}}}",
                         "res": "Row Updated"
                     })
-        for j in range(k,n):
+        for j in range(k + 1,n):
           A[i][j] = A[i][j] - factor * A[k][j]
+        A[i][k] = 0  # Explicitly set to zero
         b[i] = b[i] - factor * b[k]
         steps.append(_log_matrix(A, b))
 
@@ -155,8 +157,9 @@ def forward_elimination(A, b, s, n, tol, steps):
                         "formula": f"R_{{{i}}} \\leftarrow R_{{{i}}} - ({_fmt(factor)}) \\times R_{{{k}}}",
                         "res": "Row Updated"
                     })
-        for j in range(k,n):
+        for j in range(k + 1,n):
           A[i][j] = A[i][j] - factor * A[k][j]
+        A[i][k] = 0  # Explicitly set to zero
         steps.append(_log_matrix(A, b))
 
     if abs(A[n-1][n-1]/s[n-1]) < tol: # Check for singularity
@@ -175,8 +178,9 @@ def forward_elimination(A, b, s, n, tol, steps):
                         "formula": f"R_{{{i}}} \\leftarrow R_{{{i}}} - ({_fmt(factor)}) \\times R_{{{k}}}",
                         "res": "Row Updated"
                     })
-        for j in range(k,n):
+        for j in range(k + 1,n):
           A[i][j] = A[i][j] - factor * A[k][j]
+        A[i][k] = 0  # Explicitly set to zero
         steps.append(_log_matrix(A, b))
 
     if abs(A[n-1][n-1]) < tol: # Check for singularity
