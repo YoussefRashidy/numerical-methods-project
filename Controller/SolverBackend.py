@@ -5,6 +5,7 @@ import numpy as np
 # from src.methods.lu_decomposition_DoLittle import LU_decomposition
 from src.methods.lu_decomposition_Crout import solve_from_Crout
 from src.methods.gauss_elimination import gauss_elimination
+from src.methods.gauss_jordan import gauss_jordan
 
 class SolverBackend:
     """
@@ -35,7 +36,9 @@ class SolverBackend:
             elif method == "Gaussian Elimination":
                 x, U, steps = gauss_elimination(A, b, len(b)) # Partial implementation
                 L = None
-
+            elif method == "Gauss-Jordan":
+                x, U, steps = gauss_jordan(A,b,scaling,len(b),1e-12)
+                L = None
             elif method == "Crout Decomposition":
                 x, L, U, steps = solve_from_Crout(A,b,scaling)
                 
