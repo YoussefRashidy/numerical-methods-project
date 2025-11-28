@@ -53,11 +53,19 @@ function generateGrid() {
 function toggleParams() {
     const method = document.getElementById('methodSelect').value;
     const paramsDiv = document.getElementById('iterativeParams');
+    const scalingDiv = document.getElementById('scalingParam');
     
     if (method.includes("Iteration")) {
         paramsDiv.classList.remove('hidden');
     } else {
         paramsDiv.classList.add('hidden');
+    }
+
+    if (method == "Crout Decomposition" || method == "Gauss-Jordan"){
+        scalingDiv.classList.remove('hidden');
+    }
+    else{
+        scalingDiv.classList.add('hidden');
     }
 }
 
@@ -68,6 +76,8 @@ async function solveSystem() {
     const tol = parseFloat(document.getElementById('tolInput').value);
     const maxIter = parseInt(document.getElementById('iterInput').value);
     const sigFigs = parseInt(document.getElementById('sigFigsInput').value);
+    const scalingInput = document.getElementById('scalingInput')
+    const scaling = scalingInput ? scalingInput.checked : false;
     
     let A = [];
     let b = [];
@@ -113,7 +123,8 @@ async function solveSystem() {
                 tol: tol,
                 max_iter: maxIter,
                 x_init: x_init.length > 0 ? x_init : null,
-                sig_figs: sigFigs
+                sig_figs: sigFigs,
+                scaling: scaling,
             })
         });
 
@@ -207,8 +218,18 @@ function displayResults(x, L, U, steps, timeMs, sigFigs) {
         stepsLog.innerHTML = "<div class='text-slate-500 italic'>No detailed steps available for this method.</div>";
     }
 
-    renderMathInElement(document.body);
+    
+    renderMathInElement(document.body, {
+        delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false},
+            {left: '\\(', right: '\\)', display: false},
+            {left: '\\[', right: '\\]', display: true}
+        ]
+    });
+    
     section.scrollIntoView({ behavior: 'smooth' });
+
 }
 
 function toggleSteps() {

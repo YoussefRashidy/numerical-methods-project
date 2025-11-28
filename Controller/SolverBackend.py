@@ -2,6 +2,10 @@ import math
 import time
 from Model.MatrixSolver import MatrixSolver
 import numpy as np
+# from src.methods.lu_decomposition_DoLittle import LU_decomposition
+from src.methods.lu_decomposition_Crout import solve_from_Crout
+from src.methods.gauss_elimination import gauss_elimination
+from src.methods.gauss_jordan import gauss_jordan
 
 class SolverBackend:
     """
@@ -9,7 +13,7 @@ class SolverBackend:
     Acts as a library of numerical algorithms.
     """
 
-    def solve(self, method, A, b, steps_log=False, tol=None, max_iter=None, sig_figs=4, x_init=None):
+    def solve(self, method, A, b, scaling=False, steps_log=False, tol=None, max_iter=None, sig_figs=4, x_init=None):
         """
         Routes the request to the correct algorithm.
         Returns: x, L, U, steps, execution_time
@@ -30,11 +34,16 @@ class SolverBackend:
                 U = None
             
             elif method == "Gaussian Elimination":
-                x, U, steps = self.solve_gaussian(A, b, sig_figs) # Partial implementation
+                x, U, steps = gauss_elimination(A, b, len(b)) # Partial implementation
                 L = None
+            elif method == "Gauss-Jordan":
+                x, U, steps = gauss_jordan(A,b,scaling,len(b),1e-12)
+                L = None
+            elif method == "Crout Decomposition":
+                x, L, U, steps = solve_from_Crout(A,b,scaling)
                 
             elif method == "LU Decomposition":
-                x, L, U, steps = self.solve_lu(A, b, sig_figs)
+                x, L, U, steps = MatrixSolver.solve_from_LU(A, b, sig_figs)
                 
             elif method == "Jacobi Iteration":
                 if tol is None or max_iter is None:
@@ -78,33 +87,7 @@ class SolverBackend:
             
         return x, L, steps
 
-    def solve_lu(self, A, b, sig_figs):
-        # Implementation of LU (Doolittle)
-        n = len(A)
-        L = [[0.0]*n for _ in range(n)]
-        U = [[0.0]*n for _ in range(n)]
-        steps = []
-        for i in range(n): L[i][i] = 1.0
-
-        for i in range(n):
-            for k in range(i, n):
-                s = sum(L[i][j] * U[j][k] for j in range(i))
-                U[i][k] = A[i][k] - s
-                steps.append({"type": "calc_u", "i": i, "j": k, "formula": "...", "res": self._fmt(U[i][k], sig_figs)})
-            for k in range(i+1, n):
-                s = sum(L[k][j] * U[j][i] for j in range(i))
-                L[k][i] = (A[k][i] - s) / U[i][i]
-                steps.append({"type": "calc_l", "i": k, "j": i, "formula": "...", "res": self._fmt(L[k][i], sig_figs)})
-
-        # Forward/Backward Subs
-        y = [0.0]*n
-        for i in range(n):
-            y[i] = (b[i] - sum(L[i][j]*y[j] for j in range(i))) / L[i][i]
-        x = [0.0]*n
-        for i in range(n-1, -1, -1):
-            x[i] = (y[i] - sum(U[i][j]*x[j] for j in range(i+1, n))) / U[i][i]
-            
-        return x, L, U, steps
+    
 
     def solve_gaussian(self, A, b, sig_figs):
          raise NotImplementedError("Gaussian Elimination not fully implemented yet.")

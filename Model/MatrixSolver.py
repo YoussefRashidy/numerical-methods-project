@@ -2,6 +2,8 @@ import math
 
 from src.utils.precision_rounding import toDecimal, toFloats, intializeContext
 import decimal
+from src.methods.gauss_elimination import back_substitution,forward_substitution
+import copy
 import numpy as np
 
 
@@ -220,8 +222,157 @@ class MatrixSolver:
         
         return toFloats(x), steps
     
+
     @staticmethod
-    def _fmt_vec(vec, sig_figs):
+    def LU_decomposition(A, b=[], scaling=False, sig_figs=4):
+        """
+        Perform LU decomposition of A with optional scaled partial pivoting.
+        A : square matrix (list of lists)
+        scaling : if True → use scaled partial pivoting, 
+                if False → use normal partial pivoting
+        """
+        n = len(A)
+        A = copy.deepcopy(A)
+        L = [[0.0]*n for _ in range(n)]
+        U = [[0.0]*n for _ in range(n)]
+        P = list(range(n))  # permutation vector
+        steps = []
+
+        steps.append("Initialized P = " + str(P))
+
+        # Scaling factors (only used when scaling=True)
+        if scaling:
+            s = [max(abs(A[i][j]) for j in range(n)) for i in range(n)]
+        else:
+            # No scaling → set all scaling factors = 1
+            s = [1 for _ in range(n)]
+
+        er = 1 # -1 if no solution, 0 if infinite
+        rankA = np.linalg.matrix_rank(A)
+        
+        b_ = np.array(b).reshape(len(b), 1) 
+        augumented = np.hstack((A, b_))
+        rankAb = np.linalg.matrix_rank(augumented)
+        
+        if rankA != rankAb: #no solution
+            er = -1
+        elif rankA == rankAb and rankA < n: #inf solutions
+            er = 0    
+
+        for k in range(n-1):
+
+            # --- PIVOT SELECTION ---
+            pivot_row = k
+            max_ratio = 0
+            # ratio = |A[i][k]| / s[i]  (if scaling) OR |A[i][k]| (if no scaling)
+            if scaling:
+                if s[P[k]] != 0:
+                    max_ratio = abs(A[P[k]][k]) / s[P[k]]
+            else:
+                max_ratio = abs(A[P[k]][k])
+
+            for i in range(k+1, n):
+                ratio = 0
+                if scaling:
+                    if s[P[i]] != 0:
+                        ratio = abs(A[P[i]][k]) / s[P[i]]    
+                else:
+                    ratio = abs(A[P[i]][k])
+
+                if ratio > max_ratio:
+                    max_ratio = ratio
+                    pivot_row = i
+            
+
+            # Swap rows in permutation vector
+            P[k], P[pivot_row] = P[pivot_row], P[k]
+            steps.append(f"Pivoting: Swapped row {k} with row {pivot_row}, (New P: {P})")
+
+            # --- ELIMINATION ---
+            for i in range(k+1, n):
+                if A[P[k]][k] != 0:
+                    factor = A[P[i]][k] / A[P[k]][k]
+                    A[P[i]][k] = factor  # store factor (L)
+
+                    steps.append({
+                        "type": "calc_l",
+                        "i":"i",
+                        "j":k,
+                        "formula":f"L_{{{i}{k}}} = A_{{{i}{k}}} / A_{{{k}{k}}}",
+                        "res": MatrixSolver._fmt(factor,sig_figs)
+                    })
+
+                    for j in range(k+1, n):
+                        A[P[i]][j] -= factor * A[P[k]][j]
+
+        # Build L and U
+        for i in range(n):
+            for j in range(n):
+                if j < i:
+                    L[i][j] = A[P[i]][j]
+                elif j == i:
+                    L[i][j] = 1.0
+                    U[i][j] = A[P[i]][j]
+                else:
+                    U[i][j] = A[P[i]][j]
+
+        return L, U, P, er, steps
+
+
+    @staticmethod
+    def solve_from_LU(A, b, scaling, sig_figs=4):
+        L, U, P, er, steps = MatrixSolver.LU_decomposition(A, b, scaling, sig_figs)
+        if er == -1:
+            return "No solution"  
+        elif er == 0:
+            return "Infinite solutions"
+        
+        n = len(A)
+        # Apply row permutation to b
+        b_permuted = [b[P[i]] for i in range(n)]    # Solve Ly = Pb
+        steps.append(f"Permuted vector b according to P: {MatrixSolver._fmt_vec(b_permuted, sig_figs)}")
+
+        y = forward_substitution(L, b_permuted, n)
+        steps.append(f"Forward substitution result (y) = {MatrixSolver._fmt_vec(y, sig_figs)}")
+        # Solve Ux = y
+        x = back_substitution(U, y, n)
+        return x, L, U, steps
+
+
+
+
+    
+    @staticmethod
+    def solve_lu(A, b, sig_figs):
+        # Implementation of LU (Doolittle)
+        n = len(A)
+        L = [[0.0]*n for _ in range(n)]
+        U = [[0.0]*n for _ in range(n)]
+        steps = []
+        for i in range(n): L[i][i] = 1.0
+
+        for i in range(n):
+            for k in range(i, n):
+                s = sum(L[i][j] * U[j][k] for j in range(i))
+                U[i][k] = A[i][k] - s
+                steps.append({"type": "calc_u", "i": i, "j": k, "formula": "...", "res": MatrixSolver._fmt(U[i][k], sig_figs)})
+            for k in range(i+1, n):
+                s = sum(L[k][j] * U[j][i] for j in range(i))
+                L[k][i] = (A[k][i] - s) / U[i][i]
+                steps.append({"type": "calc_l", "i": k, "j": i, "formula": "...", "res": MatrixSolver._fmt(L[k][i], sig_figs)})
+
+        # Forward/Backward Subs
+        y = [0.0]*n
+        for i in range(n):
+            y[i] = (b[i] - sum(L[i][j]*y[j] for j in range(i))) / L[i][i]
+        x = [0.0]*n
+        for i in range(n-1, -1, -1):
+            x[i] = (y[i] - sum(U[i][j]*x[j] for j in range(i+1, n))) / U[i][i]
+            
+        return x, L, U, steps
+
+    @staticmethod
+    def _fmt_vec(vec, sig_figs=4):
         return "[" + ", ".join([MatrixSolver._fmt(v, sig_figs) for v in vec]) + "]"
     
     # --- Formatting Helper ---
@@ -234,4 +385,22 @@ class MatrixSolver:
         except:
             return str(val)
     
-    
+    @staticmethod
+    def _log_matrix(A, b, sig_figs):
+        """Helper to format the current matrix state as a clean HTML block."""
+        rows = len(A)
+        # Container with dark background and monospaced font
+        html = "<div class='mt-2 mb-4 inline-block bg-slate-900 rounded p-3 font-mono text-xs border border-slate-700 shadow-inner'>"
+        
+        for i in range(rows):
+            # Format row values with padding for alignment
+            row_str = "  ".join([f"{MatrixSolver._fmt(val, sig_figs):>8}" for val in A[i]])
+            
+            # Add the augmented vector 'b' if it exists
+            b_str = f"  |  {MatrixSolver._fmt(b[i], sig_figs)}" if b is not None else ""
+            
+            # Combine into a single line
+            html += f"<div class='whitespace-pre hover:bg-slate-800/50 px-1 rounded'>{row_str}{b_str}</div>"
+        
+        html += "</div>"
+        return html
