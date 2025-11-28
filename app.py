@@ -37,6 +37,7 @@ class MatrixRequest(BaseModel):
     max_iter: Optional[int] = 50
     x_init: Optional[List[float]] = None # New Parameter
     sig_figs: Optional[int] = 4          # New Parameter
+    scaling: bool
 
 @app.post("/solve")
 async def solve_matrix(data: MatrixRequest):
@@ -44,7 +45,8 @@ async def solve_matrix(data: MatrixRequest):
         x, L, U, steps, time_ms = solver.solve(
             data.method, 
             data.A, 
-            data.b, 
+            data.b,
+            data.scaling,
             tol=data.tol, 
             max_iter=data.max_iter,
             sig_figs=data.sig_figs,

@@ -1,8 +1,9 @@
-from gauss_elimination import back_substitution, forward_substitution
+from src.methods.gauss_elimination import back_substitution, forward_substitution
 import copy
 import numpy as np
+from Model.MatrixSolver import MatrixSolver
 
-def Crout(A, b, scaling=False):
+def Crout(A, b, sig_figs,scaling=False):
     """
     Perform Crout LU decomposition of A with optional scaled partial pivoting.
     L : lower-triangular matrix (Crout: diagonal NOT 1)
@@ -15,6 +16,9 @@ def Crout(A, b, scaling=False):
     L = [[0.0]*n for _ in range(n)]
     U = [[0.0]*n for _ in range(n)]
     P = list(range(n))
+    steps = []
+
+    steps.append(f"<div class='text-slate-400'>Initialized P = {P}</div>")
 
     # Scaling factors (only used if scaling=True)
     if scaling:
@@ -52,18 +56,42 @@ def Crout(A, b, scaling=False):
 
         # Swap permutation
         P[k], P[pivot_row] = P[pivot_row], P[k]
+        steps.append(
+                    f"<div class='p-2 my-2 bg-slate-800/50 border-l-2 border-yellow-500 rounded'>"
+                    f"<span class='text-yellow-400 font-bold'>Pivoting:</span> Swapped Row ${k}$ $\\leftrightarrow$ Row ${pivot_row}$ "
+                    f"<br><span class='text-xs text-slate-500'>New Permutation $P$: {P}</span>"
+                    f"</div>"
+                )
 
         # ---- Compute L column k ----
         L[P[k]][k] = A[P[k]][k]
         U[P[k]][k] = 1.0     # diagonal of U = 1
 
+        steps.append({
+                "type": "calc_l", "i": k, "j": k,
+                "formula": f"L_{{{k}{k}}} = A_{{{k}{k}}}",
+                "res": MatrixSolver._fmt(L[P[k]][k], sig_figs)
+            })
+
         for i in range(k+1, n):
             L[P[i]][k] = A[P[i]][k]
+            steps.append({
+                    "type": "calc_l", "i": i, "j": k,
+                    "formula": f"L_{{{i}{k}}} = A_{{{i}{k}}}",
+                    "res": MatrixSolver._fmt(L[P[i]][k], sig_figs)
+                })
 
         # ---- Compute U row k ----
         for j in range(k+1, n):
             if L[P[k]][k] != 0:
                 U[P[k]][j] = A[P[k]][j] / L[P[k]][k]
+                steps.append({
+                        "type": "calc_u", "i": k, "j": j,
+                        "formula": f"U_{{{k}{j}}} = A_{{{k}{j}}} / L_{{{k}{k}}}",
+                        "res": MatrixSolver._fmt(U[P[k]][j], sig_figs)
+                    })
+            else:
+                steps.append(f"<div class='text-red-400'>Warning: Zero pivot encountered at L_{{{k}{k}}}</div>")
 
         # ---- Update submatrix ----
         for i in range(k+1, n):
@@ -80,12 +108,12 @@ def Crout(A, b, scaling=False):
             if j >= i:
                 U_final[i][j] = U[P[i]][j]
 
-    return L_final, U_final, P, er
+    return L_final, U_final, P, er, steps
 
 
 
-def solve_from_Crout(A, b, scaling):
-    L, U, P, er = Crout(A, b, scaling)
+def solve_from_Crout(A, b, scaling, sig_figs=4):
+    L, U, P, er, steps = Crout(A, b, sig_figs, scaling)
     if er == -1:
         return "No solution"  
     elif er == 0:
@@ -94,8 +122,12 @@ def solve_from_Crout(A, b, scaling):
     n = len(A)
     # Permute b
     b_permuted = [b[P[i]] for i in range(n)]
+    steps.append(f"<div class='mt-4 pt-4 border-t border-slate-700 font-bold text-cyan-400'>Solving Phase</div>")
+    steps.append(f"Permuted vector $b$ according to $P$: ${MatrixSolver._fmt_vec(b_permuted, sig_figs)}$")
+    
     y = forward_substitution(L, b_permuted, n)
+    steps.append(f"Forward Substitution Result ($y$): ${MatrixSolver._fmt_vec(y, sig_figs)}$")
     x = back_substitution(U, y, n)
-    return x
+    return x, L, U, steps
 
 

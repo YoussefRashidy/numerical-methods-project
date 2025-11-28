@@ -1,6 +1,7 @@
 from gauss_elimination import back_substitution, forward_substitution
 import copy
 import numpy as np
+from Model.MatrixSolver import MatrixSolver
 
 def LU_decomposition(A, b=[], scaling=False):
     """
@@ -14,6 +15,9 @@ def LU_decomposition(A, b=[], scaling=False):
     L = [[0.0]*n for _ in range(n)]
     U = [[0.0]*n for _ in range(n)]
     P = list(range(n))  # permutation vector
+    steps = []
+
+    steps.append("Initialized P = " + str(P))
 
     # Scaling factors (only used when scaling=True)
     if scaling:
@@ -61,12 +65,22 @@ def LU_decomposition(A, b=[], scaling=False):
 
         # Swap rows in permutation vector
         P[k], P[pivot_row] = P[pivot_row], P[k]
+        steps.append(f"Pivoting: Swapped row {k} with row {pivot_row}, (New P: {P})")
 
         # --- ELIMINATION ---
         for i in range(k+1, n):
             if A[P[k]][k] != 0:
                 factor = A[P[i]][k] / A[P[k]][k]
                 A[P[i]][k] = factor  # store factor (L)
+
+                steps.append({
+                    "type": "calc_1",
+                    "i":"i",
+                    "j":k,
+                    "formula":f"L_{{{i}{k}}} = A_{{{i}{k}}} / A_{{{k}{k}}}",
+                    "res": MatrixSolver._fmt(factor)
+                })
+
                 for j in range(k+1, n):
                     A[P[i]][j] -= factor * A[P[k]][j]
 
@@ -81,12 +95,12 @@ def LU_decomposition(A, b=[], scaling=False):
             else:
                 U[i][j] = A[P[i]][j]
 
-    return L, U, P, er
+    return L, U, P, er, steps
 
 
 
 def solve_from_LU(A, b, scaling):
-    L, U, P, er = LU_decomposition(A, b, scaling)
+    L, U, P, er, steps = LU_decomposition(A, b, scaling)
     if er == -1:
         return "No solution"  
     elif er == 0:
