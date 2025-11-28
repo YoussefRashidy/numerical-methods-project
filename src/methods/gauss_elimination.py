@@ -1,7 +1,7 @@
 import numpy as np
 import copy
 # from Model.MatrixSolver import MatrixSolver
-from ..utils.matrix_utils import _log_matrix
+from ..utils.matrix_utils import _log_matrix, _fmt_vec
 
 def Pivoting(A, b, s, n, k, steps):
 # A: Coef. of matrix A; 2-D array
@@ -85,14 +85,18 @@ def forward_elimination(A, b, s, n, tol, steps):
         return -1
       for i in range(k+1,n):
         factor = A[i][k] / A[k][k]
-        steps.append({
-                        "type": "calc_l", "i": i, "j": k,
-                        "formula": f"R_{{{i}}} \\leftarrow R_{{{i}}} - ({_fmt(factor)}) \\times R_{{{k}}}",
-                        "res": "Row Updated"
-                    })
+        
         for j in range(k,n):
           A[i][j] = A[i][j] - factor * A[k][j]
         b[i] = b[i] - factor * b[k]
+
+        row_display_vals = list(A[i]) + [b[i]]
+        row_res = _fmt_vec(row_display_vals)
+        steps.append({
+                        "type": "calc_l", "i": i, "j": k,
+                        "formula": f"R_{{{i}}} \\leftarrow R_{{{i}}} - ({_fmt(factor)}) \\times R_{{{k}}}",
+                        "res": row_res
+                    })
         steps.append(_log_matrix(A, b))
 
     if abs(A[n-1][n-1]/s[n-1]) < tol: # Check for singularity
@@ -104,14 +108,17 @@ def forward_elimination(A, b, s, n, tol, steps):
         return -1
       for i in range(k+1,n):
         factor = A[i][k] / A[k][k]
-        steps.append({
-                        "type": "calc_l", "i": i, "j": k,
-                        "formula": f"R_{{{i}}} \\leftarrow R_{{{i}}} - ({_fmt(factor)}) \\times R_{{{k}}}",
-                        "res": "Row Updated"
-                    })
         for j in range(k,n):
           A[i][j] = A[i][j] - factor * A[k][j]
         b[i] = b[i] - factor * b[k]
+
+        row_display_vals = list(A[i]) + [b[i]]
+        row_res = _fmt_vec(row_display_vals)
+        steps.append({
+                        "type": "calc_l", "i": i, "j": k,
+                        "formula": f"R_{{{i}}} \\leftarrow R_{{{i}}} - ({_fmt(factor)}) \\times R_{{{k}}}",
+                        "res": row_res
+                    })
         steps.append(_log_matrix(A, b))
 
     if abs(A[n-1][n-1]) < tol: # Check for singularity
@@ -123,13 +130,16 @@ def forward_elimination(A, b, s, n, tol, steps):
         return -1
       for i in range(k+1,n):
         factor = A[i][k] / A[k][k]
+        for j in range(k,n):
+          A[i][j] = A[i][j] - factor * A[k][j]
+
+        row_res = _fmt_vec(A[i])
+
         steps.append({
                         "type": "calc_l", "i": i, "j": k,
                         "formula": f"R_{{{i}}} \\leftarrow R_{{{i}}} - ({_fmt(factor)}) \\times R_{{{k}}}",
-                        "res": "Row Updated"
+                        "res": row_res
                     })
-        for j in range(k,n):
-          A[i][j] = A[i][j] - factor * A[k][j]
         #steps.append(copy.deepcopy(A))
 
     if abs(A[n-1][n-1]/s[n-1]) < tol: # Check for singularity
@@ -143,13 +153,16 @@ def forward_elimination(A, b, s, n, tol, steps):
         factor = A[i][k] / A[k][k]
         if abs(factor) < tol :
             continue
+        for j in range(k,n):
+          A[i][j] = A[i][j] - factor * A[k][j]
+
+        row_res = _fmt_vec(A[i])
+
         steps.append({
                         "type": "calc_l", "i": i, "j": k,
                         "formula": f"R_{{{i}}} \\leftarrow R_{{{i}}} - ({_fmt(factor)}) \\times R_{{{k}}}",
-                        "res": "Row Updated"
+                        "res": row_res
                     })
-        for j in range(k,n):
-          A[i][j] = A[i][j] - factor * A[k][j]
         #steps.append(copy.deepcopy(A))
 
     if abs(A[n-1][n-1]) < tol: # Check for singularity
