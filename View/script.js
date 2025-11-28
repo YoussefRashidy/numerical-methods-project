@@ -203,9 +203,11 @@ function displayResults(x, L, U, steps, timeMs, sigFigs) {
                 div.innerHTML = `
                     <div class="flex justify-between items-center text-sm">
                         <span class="text-cyan-400 font-bold">Iteration ${s.k}</span>
-                        <span class="text-slate-400">Error: ${s.error}</span>
+                        <span class="text-slate-400">Error: ${s.error}%</span>
                     </div>
                     <div class="text-emerald-300 mt-1 font-mono text-xs">
+                        ${s.steps.map((step, idx) => `${step}`).join('<br>')}
+                        <br>
                         x = [${s.x_vec.join(", ")}]
                     </div>
                 `;
