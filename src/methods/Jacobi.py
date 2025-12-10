@@ -1,6 +1,7 @@
 from src.utils.precision_rounding import toDecimal, toFloats, intializeContext
 import decimal
 import numpy as np
+
 def isDiagonalyDominant(A) :
     #Check if Matrix A is diagonaly dominant 
     dim = A.shape
@@ -20,25 +21,28 @@ def isDiagonalyDominant(A) :
             return False    
     return at_least_one_strictly_greater            
             
-# GaussSeidel with relaxation for improved convergence
+# Jacobi with relaxation for improved convergence (called weighted Jacobi)
 # the parameter n can be removed as we can get the no of vars from the npArray
-def GaussSeidel_noNorm(A,b,n,x,maxIterations,ErrorTolerance,relax , significantFigs = 7 , rounding = True) :
+def Jacobi_noNorm(A,b,n,x,maxIterations,ErrorTolerance,relax , significantFigs = 7 , rounding = True) :
     # Setting up signifcant figs and rounding/chopping
     intializeContext(significantFigs,rounding)
-    
+    #Copying the arrays to avoid modifying original arrays
+    A = A.copy()
+    b = b.copy()
+    x = x.copy()
     #converting floats to decimals 
     A = toDecimal(A)
     b = toDecimal(b)
     x = toDecimal(x)
     relax = decimal.Decimal(str(relax))
-    
+    #Array to hold new values
+    xNew = np.zeros(n,dtype=object)
     #List to hold iteration details
     iteration_details = []
-    #Check for diagonaly dominant matrix
     if(isDiagonalyDominant(A) ) :
         isDominant = 'The matrix is diagonaly dominant'
     else :
-        isDominant = 'The matrix is not diagonaly dominant'    
+        isDominant = 'The matrix is not diagonaly dominant' 
     # Calculating first iteration before applying relaxation    
     for i in range(n) :
         sum = b[i]
@@ -46,10 +50,12 @@ def GaussSeidel_noNorm(A,b,n,x,maxIterations,ErrorTolerance,relax , significantF
             if(i==j) :
                 continue
             sum -= A[i][j] * x[j]
-        x[i] = sum/A[i][i]
+        xNew[i] = sum/A[i][i]
+    x = xNew.copy()
+     # Storing details of first iteration    
     details = {
             'iteration' : 1,
-            'xNew' : toFloats(x),
+            'xNew' : toFloats(xNew),
             'maxError' : '_'
         }     
     iteration_details.append(details)
@@ -57,7 +63,7 @@ def GaussSeidel_noNorm(A,b,n,x,maxIterations,ErrorTolerance,relax , significantF
     # Loop until convergence or max iterations reached 
     while (True) :
         belowTolerance = True
-        maxError = 0
+        maxError = decimal.Decimal('0')
         for i in range(n) :
             oldX = x[i]
             sum = b[i]
@@ -65,20 +71,20 @@ def GaussSeidel_noNorm(A,b,n,x,maxIterations,ErrorTolerance,relax , significantF
                 if(i==j) :
                     continue
                 sum -= A[i][j] * x[j]
-            x[i] = relax*sum/A[i][i] + (1-relax)*oldX
-            if (x[i] != 0) :
-                estimatedError = abs(float((x[i]-oldX)/x[i])) * 100
-                estimatedError = float(estimatedError)
+            xNew[i] = relax*sum/A[i][i] + (1-relax)*oldX
+            if (xNew[i] != 0) :
+                estimatedError = abs((xNew[i]-oldX)/xNew[i]) * 100
+                maxError = max(maxError, estimatedError)
                 if(estimatedError > ErrorTolerance):
                     belowTolerance = False
-                maxError = max(maxError, estimatedError)
         details = {
             'iteration' : iteration,
-            'xNew' : toFloats(x),
+            'xNew' : toFloats(xNew),
             'maxError' : float(maxError)
-        }            
-        iteration+=1
+        }         
         iteration_details.append(details)
+        iteration+=1
+        x = xNew.copy()
         if(belowTolerance or iteration >= maxIterations) :
             break
     lines = [isDominant]
@@ -88,5 +94,5 @@ def GaussSeidel_noNorm(A,b,n,x,maxIterations,ErrorTolerance,relax , significantF
             f"  xNew: {d['xNew']}\n"
             f"  maxError: {d['maxError']}"
         )
-        lines.append(s)    
-    return toFloats(x), lines
+        lines.append(s)        
+    return toFloats(xNew) , lines

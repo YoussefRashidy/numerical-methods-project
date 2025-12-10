@@ -1,0 +1,71 @@
+/* Custom Glassmorphism & Animations */
+body {
+    background-color: #0f172a; /* Slate 900 */
+    background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
+                      radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), 
+                      radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
+    font-family: 'Inter', sans-serif;
+    color: white;
+    min-height: 100vh;
+}
+
+.glass-panel {
+    background: rgba(30, 41, 59, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+.matrix-input {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid #334155;
+    color: #e2e8f0;
+    text-align: center;
+    transition: all 0.2s;
+}
+
+.matrix-input:focus {
+    border-color: #38bdf8;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    transition: transform 0.1s, box-shadow 0.2s;
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+/* Matrix Brackets for Display */
+.matrix-bracket {
+    position: relative;
+    padding: 0 10px;
+}
+.matrix-bracket::before, .matrix-bracket::after {
+    content: "";
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 8px;
+    border: 2px solid #94a3b8;
+}
+.matrix-bracket::before { left: 0; border-right: 0; }
+.matrix-bracket::after { right: 0; border-left: 0; }
+
+/* Animation for Steps */
+.fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}

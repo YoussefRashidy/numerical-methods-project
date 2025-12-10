@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix Solver Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-5xl mx-auto">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-500 mb-2">
+                Matrix Solver Pro
+            </h1>
+            <p class="text-slate-400">Numerical Analysis Workspace</p>
+        </header>
+
+        <!-- 1. Matrix Input Area -->
+        <div class="glass-panel rounded-2xl p-6 mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-semibold text-cyan-400">1. Define System</h2>
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2">
+                        <label class="text-sm text-slate-400">Sig. Figs:</label>
+                        <input type="number" id="sigFigsInput" value="4" min="1" max="10" 
+                               class="w-16 bg-slate-800 border border-slate-600 rounded px-2 py-1 text-white text-center focus:border-cyan-400 focus:outline-none">
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <label class="text-sm text-slate-400">Dimension (N):</label>
+                        <input type="number" id="dimInput" value="3" min="2" max="10" 
+                               onchange="generateGrid()"
+                               class="w-16 bg-slate-800 border border-slate-600 rounded px-2 py-1 text-white text-center focus:border-cyan-400 focus:outline-none">
+                    </div>
+                </div>
+            </div>
+
+            <div class="overflow-auto pb-4">
+                <div class="flex items-center justify-center gap-4 min-w-max">
+                    <!-- Matrix A -->
+                    <div class="relative">
+                        <div class="absolute -top-5 left-0 w-full text-center text-slate-500 text-xs font-mono">Matrix A</div>
+                        <div id="matrixContainer" class="grid gap-2 p-3"></div>
+                        <div class="absolute top-2 bottom-2 -left-2 w-4 border-l-2 border-t-2 border-b-2 border-slate-500 rounded-l-lg pointer-events-none"></div>
+                        <div class="absolute top-2 bottom-2 -right-2 w-4 border-r-2 border-t-2 border-b-2 border-slate-500 rounded-r-lg pointer-events-none"></div>
+                    </div>
+
+                    <div class="text-xl text-slate-500 font-light">×</div>
+                    <div class="text-lg text-slate-400 italic font-serif">x</div>
+                    <div class="text-xl text-slate-500 font-light">=</div>
+
+                    <!-- Vector b -->
+                    <div class="relative">
+                        <div class="absolute -top-5 left-0 w-full text-center text-yellow-600/80 text-xs font-mono">Vector b</div>
+                        <div id="vectorContainer" class="grid gap-2 p-3"></div>
+                         <div class="absolute top-2 bottom-2 -left-2 w-3 border-l-2 border-t-2 border-b-2 border-yellow-600/50 rounded-l-lg pointer-events-none"></div>
+                         <div class="absolute top-2 bottom-2 -right-2 w-3 border-r-2 border-t-2 border-b-2 border-yellow-600/50 rounded-r-lg pointer-events-none"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Configuration Area -->
+        <div class="glass-panel rounded-2xl p-6 mb-6">
+            <h2 class="text-lg font-semibold text-cyan-400 mb-4">2. Configure Solver</h2>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- Method Selection -->
+                <div>
+                    <label class="block text-sm text-slate-400 mb-2">Algorithm</label>
+                    <select id="methodSelect" onchange="toggleParams()" 
+                            class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 text-white focus:border-cyan-400 focus:outline-none appearance-none">
+                        <option value="Cholesky Decomposition">Cholesky Decomposition</option>
+                        <option value="LU Decomposition">LU Decomposition</option>
+                        <option value="Crout Decomposition">Crout Decomposition</option>
+                        <option value="Gaussian Elimination">Gaussian Elimination</option>
+                        <option value="Gauss-Jordan">Gauss-Jordan</option>
+                        <option value="Jacobi Iteration">Jacobi Iteration</option>
+                        <option value="Gauss-Seidel Iteration">Gauss-Seidel Iteration</option>
+                    </select>
+                </div>
+
+                <!-- Scaling Parameter-->
+                <div id="scalingParam" class="hidden fade-in mb-2">
+                    <div>
+                        <label class="block text-sm text-slate-400 ">Scaling</label>
+                        <input type="checkbox" id="scalingInput" "
+                               class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 text-white focus:border-cyan-400 focus:outline-none">
+                    </div>
+                </div>
+
+                <!-- Iterative Params -->
+                <div id="iterativeParams" class="hidden grid grid-cols-2 gap-4 fade-in">
+                    <div>
+                        <label class="block text-sm text-slate-400 mb-2">Tolerance</label>
+                        <input type="number" id="tolInput" value="0.0001" step="0.00001"
+                               class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 text-white focus:border-cyan-400 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-slate-400 mb-2">Max Iterations</label>
+                        <input type="number" id="iterInput" value="50"
+                               class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 text-white focus:border-cyan-400 focus:outline-none">
+                    </div>
+                    
+                    <!-- Initial Guess Vector -->
+                    <div class="col-span-2 mt-2">
+                        <label class="block text-sm text-slate-400 mb-2">Initial Guess (<span class="katex-inline">x^{(0)}</span>)</label>
+                        <div id="initialGuessContainer" class="flex gap-2 overflow-x-auto pb-2">
+                            <!-- Generated by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Action Area -->
+        <button onclick="solveSystem()" class="btn-primary w-full text-white font-bold py-4 rounded-xl shadow-lg text-lg tracking-wide mb-8">
+            SOLVE SYSTEM
+        </button>
+
+        <!-- Result Section -->
+        <div id="resultSection" class="hidden space-y-6">
+            <div class="glass-panel rounded-xl p-6 border-l-4 border-emerald-500 relative">
+                <!-- Time Badge -->
+                <div class="absolute top-4 right-4 bg-slate-800/50 px-3 py-1 rounded-full text-xs text-slate-400 border border-slate-700">
+                    ⏱️ <span id="execTime">0</span> ms
+                </div>
+
+                <h3 class="text-xl font-bold text-emerald-400 mb-4">Final Solution</h3>
+                <div class="flex flex-wrap gap-8 items-start">
+                    <div>
+                        <div class="text-sm text-slate-400 mb-2">Solution Vector (<span class="katex-inline">x</span>)</div>
+                        <div id="solutionVector" class="text-2xl font-mono text-white tracking-wider"></div>
+                    </div>
+                    
+                    <div id="matrixLContainer" class="hidden">
+                        <div class="text-sm text-slate-400 mb-2">Lower Triangular (<span class="katex-inline">L</span>)</div>
+                        <div id="matrixLDisplay" class="font-mono text-slate-300 text-sm"></div>
+                    </div>
+
+                    <div id="matrixUContainer" class="hidden">
+                        <div class="text-sm text-slate-400 mb-2">Upper Triangular (<span class="katex-inline">U</span>)</div>
+                        <div id="matrixUDisplay" class="font-mono text-slate-300 text-sm"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <button onclick="toggleSteps()" id="stepsBtn" class="text-slate-400 hover:text-white underline decoration-dashed underline-offset-4 transition">
+                    Show Detailed Steps ▼
+                </button>
+            </div>
+
+            <div id="stepsContainer" class="hidden glass-panel rounded-xl p-6 bg-slate-900/50 border-slate-700">
+                <div id="stepsLog" class="space-y-4 text-slate-300"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
