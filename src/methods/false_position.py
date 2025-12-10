@@ -1,7 +1,27 @@
 import decimal
 import pandas as pd # pandas for the table
+import sympy as sp
 
-from parser import intializeContext, parse_exp
+def intializeContext(significantFigs,rounding) :
+    #Intialize the context with specified signFigs and rounding/chopping
+    decimal.getcontext().prec = significantFigs 
+    if( rounding ) :
+        decimal.getcontext().rounding = decimal.ROUND_HALF_UP
+    else :
+        decimal.getcontext().rounding = decimal.ROUND_DOWN 
+
+def parse_exp(expr_str , var_name='x') :
+    x = sp.symbols(var_name)
+    expr = sp.sympify(expr_str)
+    
+    def decimal_func(x_decimal) :
+        if not isinstance(x_decimal,decimal.Decimal) :
+            x_decimal = decimal.Decimal(x_decimal)
+            
+        result = expr.evalf(decimal.getcontext().prec,subs={x:x_decimal})
+        return decimal.Decimal(str(result))
+    
+    return decimal_func 
 
 def false_position(x1, x2, func_expr, tol=decimal.Decimal("1e-7"), max_iter=100,
                   significantFigs=6, rounding=True):
