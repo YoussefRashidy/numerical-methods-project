@@ -34,7 +34,7 @@ class SolverBackend:
                 U = None
             
             elif method == "Gaussian Elimination":
-                x, U, steps = gauss_elimination(A, b, len(b)) # Partial implementation
+                x, U, steps = gauss_elimination(A, b, len(b), 1e-12 ,scaling ,sig_figs) # Partial implementation
                 L = None
             elif method == "Gauss-Jordan":
                 x, U, steps = gauss_jordan(A,b,scaling,len(b),1e-12, sig_figs)
