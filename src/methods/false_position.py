@@ -38,31 +38,52 @@ def false_position(x1, x2, func_expr, tol=decimal.Decimal("1e-7"), max_iter=100,
     
     if f(x1) * f(x2) > 0: #checking whether the bounds have odd number of roots or not
       print("the bounds are wrong")
-      return None, None # Return None for xr and None for table
+      return None, None, 0, [] # Return None for xr and None for table
 
     if f(x1) * f(x2) == 0:
       if f(x1) == 0:
-          return x1, None # Return xr and None for table
+          return x1, None, 0, [] # Return xr and None for table
       else:
-          return x2, None # Return xr and None for table
+          return x2, None, 0, [] # Return xr and None for table
 
     xl = min(x1,x2)
     xu = max(x1,x2)
 
     iteration_data = [] # List to store iteration details
 
-    xr_old = ((xl*f(xu)) - (xu*f(xl))) / (f(xu)-f(xl)) * 0.5
+    xr_old = None
+    # xr = ((xl*f(xu)) - (xu*f(xl))) / (f(xu)-f(xl)) * 0.5
 
     for i in range(1,max_iter+1):
-      xr=((xl*f(xu)) - (xu*f(xl))) / (f(xu)-f(xl))
+
+      numerator = (xl * f(xu)) - (xu * f(xl))
+      denominator = f(xu) - f(xl)
+
+      if denominator == 0:
+        ea_rel = "Error: Denominator = 0"
+        break
+      
+      xr= numerator / denominator
+
+      if xr_old is None:
+        ea_rel = "Undefined"
+      else:
+        if xr == 0:
+          ea_rel = "Undefined"
+        else:
+          ea_rel = str(abs((xr - xr_old)/xr) * 100)
+
+      
+
       iteration_data.append({
-        "Iteration": i,
-        "xl": xl,
-        "xu": xu,
-        "xr": xr,
-        "f(xr)": f(xr),
-        "Et": abs(xr - xr_old),
-        "ϵ": str(abs((xr - xr_old)/xr)) + "%"
+        "iter": i,
+        "xl": str(xl),
+        "xu": str(xu),
+        "x_new": str(xr),
+        "f(xr)": str(f(xr)),
+        "x_old": str(xr_old),
+        "Et": str(abs(xr - xr_old)) if xr_old is not None else "---",
+        "error": ea_rel
       })
 
       if(f(xr) *f(xl) < 0):
@@ -75,5 +96,5 @@ def false_position(x1, x2, func_expr, tol=decimal.Decimal("1e-7"), max_iter=100,
 
       xr_old = xr # Updating xr_old for the next iteration
 
-    df = pd.DataFrame(iteration_data)
-    return xr, df
+    # df = pd.DataFrame(iteration_data)
+    return (xr, ea_rel, len(iteration_data), iteration_data)

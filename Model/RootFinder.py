@@ -41,7 +41,7 @@ class RootFinder:
             if xl is None or xu is None:
                 raise ValueError("False-Position requires lower (xl) and upper (xu) bounds.")
             # return false_position(equation, xl, xu, tol, max_iter, sig_figs)
-            return None, None, None, ["False-Position not implemented yet"]
+            return false_position.false_position(x1=xl, x2=xu, func_expr=equation,tol= tol,max_iter= max_iter,significantFigs= sig_figs)
 
         elif method == "Fixed Point":
             if x0 is None:

@@ -52,22 +52,28 @@ def Bisection(x1, x2, func_expr, tol=decimal.Decimal("1e-7"), max_iter=100,
 
     iteration_data = [] # List to store iteration details
 
-    xr = (xl+xu)/decimal.Decimal("4.0")
+    # xr = (xl+xu)/decimal.Decimal("4.0")
+    xr_old = None
 
     for i in range(1,max_iter+1):
-        xr_old = xr
         xr=(xl+xu)/decimal.Decimal("2.0")
 
-        ea_rel = str(abs((xr - xr_old)/xr))
+        if xr_old is None:
+            ea_rel = "---"
+        else:
+            if xr == 0:
+                ea_rel = "Undefined"
+            else:
+                ea_rel = str(abs((xr - xr_old)/xr) * 100)
 
         iteration_data.append({
             "iter": i,
-            "xl": xl,
-            "xu": xu,
-            "x_new": xr,
-            "f(xr)": f(xr),
-            "x_old": xr_old,
-            "Et": abs(xr - xr_old),
+            "xl": str(xl),
+            "xu": str(xu),
+            "x_new": str(xr),
+            "f(xr)": str(f(xr)),
+            "x_old": str(xr_old),
+            "Et": str(abs(xr - xr_old)) if xr_old is not None else "---",
             "error": ea_rel
         })
 
