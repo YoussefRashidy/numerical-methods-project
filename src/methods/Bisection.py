@@ -35,12 +35,13 @@ def Bisection(x1, x2, func_expr, tol=decimal.Decimal("1e-7"), max_iter=100,
 
     # parse expression to Decimal-based function
     f = parse_exp(func_expr)
+    f_xl = f(x1)
+    f_xu = f(x2)
 
-    if f(x1) * f(x2) > 0:  #checking whether the bounds have odd number of roots or not
-        print("the bounds are wrong")
-        return None, None # Return None for xr and None for table
+    if f_xl * f_xu > 0:  #checking whether the bounds have odd number of roots or not
+        raise ValueError("Invalid Interval: No root bracketed (f(xl)*f(xu) > 0)")
 
-    if f(x1) * f(x2) == 0:
+    if  f_xl * f_xu == 0:
         if f(x1) == 0:
             return x1, None # Return xr and None for table
         else:
@@ -51,18 +52,23 @@ def Bisection(x1, x2, func_expr, tol=decimal.Decimal("1e-7"), max_iter=100,
 
     iteration_data = [] # List to store iteration details
 
-    xr_old = (xl+xu)/4.0
+    xr = (xl+xu)/decimal.Decimal("4.0")
 
     for i in range(1,max_iter+1):
-        xr=(xl+xu)/2.0
+        xr_old = xr
+        xr=(xl+xu)/decimal.Decimal("2.0")
+
+        ea_rel = str(abs((xr - xr_old)/xr))
+
         iteration_data.append({
-            "Iteration": i,
+            "iter": i,
             "xl": xl,
             "xu": xu,
-            "xr": xr,
+            "x_new": xr,
             "f(xr)": f(xr),
+            "x_old": xr_old,
             "Et": abs(xr - xr_old),
-            "ϵ": str(abs((xr - xr_old)/xr))+"%"
+            "error": ea_rel
         })
 
         if(f(xr) *f(xl) < 0):
@@ -75,6 +81,6 @@ def Bisection(x1, x2, func_expr, tol=decimal.Decimal("1e-7"), max_iter=100,
 
         xr_old = xr # Update xr_old for the next iteration
 
-    df = pd.DataFrame(iteration_data)
-    return xr, df
+    # df = pd.DataFrame(iteration_data)
+    return (xr, ea_rel, len(iteration_data), iteration_data)
 
