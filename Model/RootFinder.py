@@ -1,4 +1,4 @@
-from src.methods import Bisection, false_position, newton_raphson
+from src.methods import Bisection, false_position, newton_raphson, secantMothod
 
 class RootFinder:
     """
@@ -67,7 +67,7 @@ class RootFinder:
             if x0 is None or x1 is None:
                 raise ValueError("Secant method requires two initial guesses (x0, x1).")
             # return secant(equation, x0, x1, tol, max_iter, sig_figs)
-            return None, None, None, ["Secant not implemented yet"]
+            return secantMothod.secant_method(x0,x1,equation,tol,max_iter,sig_figs)
 
         else:
             raise ValueError(f"Root finding method '{method}' is not supported.")
