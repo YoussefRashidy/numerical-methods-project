@@ -79,6 +79,7 @@ class RootRequest(BaseModel):
     xu: Optional[float] = None
     x0: Optional[float] = None
     x1: Optional[float] = None
+    g_equation: str
 
 @app.post("/root")
 async def find_root(data: RootRequest):
@@ -93,6 +94,7 @@ async def find_root(data: RootRequest):
             sig_figs = data.sig_figs,
             xl = data.xl, xu = data.xu,
             x0 = data.x0, x1 = data.x1,
+            g_equation= data.g_equation
         )
 
         end = time.perf_counter() # In ms

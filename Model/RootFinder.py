@@ -1,4 +1,4 @@
-from src.methods import Bisection, false_position, newton_raphson, secantMothod
+from src.methods import Bisection, false_position, newton_raphson, secantMothod, fixed_point
 
 class RootFinder:
     """
@@ -48,7 +48,7 @@ class RootFinder:
                 raise ValueError("Fixed Point requires an initial guess (x0).")
             # Note: Fixed point might need g(x) passed explicitly or derived
             # return fixed_point(equation, x0, tol, max_iter, sig_figs)
-            return None, None, None, ["Fixed Point not implemented yet"]
+            return fixed_point.fixed_point_iteration(x0,g_equation,tol,max_iter,sig_figs)
 
         elif method == "Newton-Raphson":
             if x0 is None:

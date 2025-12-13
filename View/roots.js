@@ -108,6 +108,7 @@ async function solveRoot() {
     const tol = parseFloat(document.getElementById('epsilonInput').value);
     const maxIter = parseInt(document.getElementById('maxIterInput').value);
     const sigFigs = parseInt(document.getElementById('sigFigsInput').value);
+    const gEquation = document.getElementById('gEquationInput').value;
 
     // B. Gather Method-Specific Inputs
     let xl = null, xu = null, x0 = null, x1 = null;
@@ -154,7 +155,8 @@ async function solveRoot() {
                 xl: xl, 
                 xu: xu, 
                 x0: x0, 
-                x1: x1
+                x1: x1,
+                g_equation: gEquation
             })
         });
 
@@ -168,7 +170,8 @@ async function solveRoot() {
         displayResults(data);
 
     } catch (err) {
-        alert("Error: " + err.message);
+        console.log("Error: ", err.message)
+        alert("Method diverged!");
     } finally {
         // F. Reset UI State
         btn.innerText = originalText;
