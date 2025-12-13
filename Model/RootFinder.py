@@ -60,7 +60,7 @@ class RootFinder:
             if x0 is None:
                 raise ValueError("Modified Newton requires an initial guess (x0).")
             # return modified_newton(equation, x0, tol, max_iter, sig_figs)
-            return None, None, None, ["Modified Newton not implemented yet"]
+            return newton_raphson.ModifiedNewtonRaphson(x0, equation, tol, max_iter, sig_figs)
 
         elif method == "Secant":
             # Secant needs two guesses x0 (x_{i-1}) and x1 (x_i)
