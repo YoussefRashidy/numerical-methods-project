@@ -1,4 +1,4 @@
-from src.methods import Bisection, false_position
+from src.methods import Bisection, false_position, newton_raphson
 
 class RootFinder:
     """
@@ -54,7 +54,7 @@ class RootFinder:
             if x0 is None:
                 raise ValueError("Newton-Raphson requires an initial guess (x0).")
             # return newton(equation, x0, tol, max_iter, sig_figs)
-            return None, None, None, ["Newton-Raphson not implemented yet"]
+            return newton_raphson.NewtonRaphson(x0, equation, tol, max_iter, sig_figs)
 
         elif method == "Modified Newton":
             if x0 is None:
