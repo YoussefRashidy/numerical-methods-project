@@ -97,6 +97,8 @@ def ModifiedNewtonRaphson(x0,func_expr,tol=1e-7 ,max_iter=100 , significantFigs 
             raise RuntimeError("Second derivative is zero!")
 
         denominator = f_prime_val**2 - f_val * f_double_prime_val
+        
+        x_root_old = x_root
 
         x_root = x_root - (f_val*f_prime_val)/denominator
 
@@ -126,8 +128,6 @@ def ModifiedNewtonRaphson(x0,func_expr,tol=1e-7 ,max_iter=100 , significantFigs 
 
         if x_root_old is not None and abs(x_root - x_root_old) < tol :
             break 
-
-        x_root_old = x_root
 
     return (x_root, relativeError , len(iteration_details) , iteration_details)
 
