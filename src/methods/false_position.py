@@ -54,7 +54,30 @@ def false_position(x1, x2, func_expr, tol=decimal.Decimal("1e-7"), max_iter=100,
     xr_old = ((xl*f(xu)) - (xu*f(xl))) / (f(xu)-f(xl)) * 0.5
 
     for i in range(1,max_iter+1):
+<<<<<<< Updated upstream
       xr=((xl*f(xu)) - (xu*f(xl))) / (f(xu)-f(xl))
+=======
+
+      numerator = (xl * f(xu)) - (xu * f(xl))
+      denominator = f(xu) - f(xl)
+
+      if denominator == 0:
+        ea_rel = "Error: Denominator = 0"
+        break
+      
+      xr= numerator / denominator
+
+      if xr_old is None:
+        ea_rel = "---"
+      else:
+        if xr == 0:
+          ea_rel = "Undefined"
+        else:
+          ea_rel = str(abs((xr - xr_old)/xr) * 100)
+
+      
+
+>>>>>>> Stashed changes
       iteration_data.append({
         "Iteration": i,
         "xl": xl,
@@ -65,10 +88,12 @@ def false_position(x1, x2, func_expr, tol=decimal.Decimal("1e-7"), max_iter=100,
         "ϵ": str(abs((xr - xr_old)/xr)) + "%"
       })
 
-      if(f(xr) *f(xl) < 0):
-        xu=xr
+      if f(xr) *f(xl) < 0:
+          xu=xr
+      elif f(xr) *f(xl) > 0:
+          xl=xr
       else:
-        xl=xr
+          break
 
       if i != 1 and abs(xr - xr_old) < tol:
         break

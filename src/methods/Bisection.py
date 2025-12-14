@@ -54,7 +54,20 @@ def Bisection(x1, x2, func_expr, tol=decimal.Decimal("1e-7"), max_iter=100,
     xr_old = (xl+xu)/4.0
 
     for i in range(1,max_iter+1):
+<<<<<<< Updated upstream
         xr=(xl+xu)/2.0
+=======
+        xr =(xl+xu)/decimal.Decimal("2.0")
+
+        if xr_old is None:
+            ea_rel = "---"
+        else:
+            if xr == 0:
+                ea_rel = "Undefined"
+            else:
+                ea_rel = str(abs((xr - xr_old)/xr) * 100)
+
+>>>>>>> Stashed changes
         iteration_data.append({
             "Iteration": i,
             "xl": xl,
@@ -65,12 +78,14 @@ def Bisection(x1, x2, func_expr, tol=decimal.Decimal("1e-7"), max_iter=100,
             "ϵ": str(abs((xr - xr_old)/xr))+"%"
         })
 
-        if(f(xr) *f(xl) < 0):
+        if f(xr) *f(xl) < 0:
             xu=xr
-        else:
+        elif f(xr) *f(xl) > 0:
             xl=xr
+        else:
+            break
 
-        if i != 1 and abs(xr - xr_old) < tol: 
+        if i != 1 and (abs((xr - xr_old)/xr) * 100) < tol: 
             break
 
         xr_old = xr # Update xr_old for the next iteration
