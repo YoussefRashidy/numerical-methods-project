@@ -64,7 +64,7 @@ def Bisection(x1, x2, func_expr, tol=decimal.Decimal("1e-7"), max_iter=100,
             if xr == 0:
                 ea_rel = "Undefined"
             else:
-                ea_rel = str(abs((xr - xr_old)/xr) * 100)
+                ea_rel = str(abs((xr - xr_old)/xr))
 
         iteration_data.append({
             "iter": i,
