@@ -84,7 +84,7 @@ def Bisection(x1, x2, func_expr, tol=decimal.Decimal("1e-7"), max_iter=100,
         else:
             break
         
-        if i != 1 and (abs((xr - xr_old)/xr) * 100) < tol: 
+        if i != 1 and (abs((xr - xr_old)/xr)) < tol: 
             break
 
         xr_old = xr # Update xr_old for the next iteration
