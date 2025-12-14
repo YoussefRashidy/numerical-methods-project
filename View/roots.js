@@ -32,6 +32,8 @@ function updateUI() {
 function plotFunction() {
     const method = document.getElementById('methodSelect').value;
     const fExpr = document.getElementById('equationInput').value;
+    const xStart = parseFloat(document.getElementById('plotStart').value) || -10;
+    const xEnd = parseFloat(document.getElementById('plotEnd').value) || 10;
     
     // JS Math Safety Helper
     const parseMath = (expr, xVal) => {
@@ -46,7 +48,7 @@ function plotFunction() {
                 .replace(/\bexp\b/g, 'Math.exp')
                 .replace(/\blog\b/g, 'Math.log')
                 .replace(/\bsqrt\b/g, 'Math.sqrt')
-                .replace(/\be\b/g, 'Math.E')
+                .replace(/\be\b/g, 'Math.exp')
                 ;
             return eval(safe.replace(/x/g, `(${xVal})`));
         } catch (e) { return null; }
@@ -57,7 +59,7 @@ function plotFunction() {
     const y2Vals = []; // For y=x or y=0
 
     // Range: -10 to 10 (Could be dynamic based on guess)
-    for (let x = -10; x <= 10; x += 0.1) {
+    for (let x = xStart; x <= xEnd; x += 0.1) {
         xVals.push(x);
         
         if (method === 'Fixed Point') {

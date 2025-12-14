@@ -11,7 +11,7 @@
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="p-4 md:p-8">
+<body class="p-4 md:p-8 bg-slate-900 text-slate-200">
 
     <div class="max-w-7xl mx-auto">
         <!-- Header with Back Button -->
@@ -32,9 +32,10 @@
             <div class="lg:col-span-4 space-y-6">
                 
                 <!-- 1. Function Definition -->
-                <div class="glass-panel rounded-2xl p-6">
+                <div class="glass-panel bg-slate-800/50 rounded-2xl p-6 border border-slate-700/50 backdrop-blur-sm">
                     <h2 class="text-lg font-semibold text-purple-400 mb-4">1. Define Function</h2>
                     
+                    <!-- Main Equation Input -->
                     <div class="mb-4">
                         <label class="block text-xs text-slate-400 mb-1 uppercase tracking-wider">Equation f(x) = 0</label>
                         <input type="text" id="equationInput" placeholder="x^3 - 2*x - 5" 
@@ -48,13 +49,27 @@
                                class="w-full bg-slate-800 border border-slate-600 rounded px-4 py-3 text-white focus:border-pink-400 focus:outline-none font-mono text-lg shadow-inner">
                     </div>
 
+                    <!-- NEW: Plot Range Inputs -->
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1 uppercase tracking-wider">Plot Start (X)</label>
+                            <input type="number" id="plotStart" value="-10" 
+                                   class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 text-white focus:border-purple-400 focus:outline-none font-mono text-sm shadow-inner transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1 uppercase tracking-wider">Plot End (X)</label>
+                            <input type="number" id="plotEnd" value="10" 
+                                   class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 text-white focus:border-purple-400 focus:outline-none font-mono text-sm shadow-inner transition-colors">
+                        </div>
+                    </div>
+
                     <button onclick="plotFunction()" class="w-full border border-slate-600 hover:bg-slate-700/50 text-slate-300 py-2 rounded transition flex items-center justify-center gap-2 text-sm font-medium">
                         <span class="text-xl">📈</span> Plot Graph
                     </button>
                 </div>
 
                 <!-- 2. Method Config -->
-                <div class="glass-panel rounded-2xl p-6">
+                <div class="glass-panel bg-slate-800/50 rounded-2xl p-6 border border-slate-700/50 backdrop-blur-sm">
                     <h2 class="text-lg font-semibold text-purple-400 mb-4">2. Configure Method</h2>
                     
                     <div class="mb-5">
@@ -74,27 +89,27 @@
                     <div id="bracketingParams" class="grid grid-cols-2 gap-4 mb-4 fade-in">
                         <div>
                             <label class="block text-xs text-slate-500 mb-1">Lower ($X_l$)</label>
-                            <input type="number" id="xlInput" placeholder="-10" class="input-field">
+                            <input type="number" id="xlInput" placeholder="-10" class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 text-white focus:border-purple-400 focus:outline-none font-mono text-sm">
                         </div>
                         <div>
                             <label class="block text-xs text-slate-500 mb-1">Upper ($X_u$)</label>
-                            <input type="number" id="xuInput" placeholder="10" class="input-field">
+                            <input type="number" id="xuInput" placeholder="10" class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 text-white focus:border-purple-400 focus:outline-none font-mono text-sm">
                         </div>
                     </div>
 
                     <div id="initialGuessParams" class="hidden mb-4 fade-in">
                         <label class="block text-xs text-slate-500 mb-1">Initial Guess ($X_0$)</label>
-                        <input type="number" id="x0Input" placeholder="0" class="input-field w-full">
+                        <input type="number" id="x0Input" placeholder="0" class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 text-white focus:border-purple-400 focus:outline-none font-mono text-sm">
                     </div>
 
                     <div id="secantParams" class="hidden grid grid-cols-2 gap-4 mb-4 fade-in">
                         <div>
                             <label class="block text-xs text-slate-500 mb-1">Guess $X_{i-1}$</label>
-                            <input type="number" id="x_minus_1" placeholder="0" class="input-field">
+                            <input type="number" id="x_minus_1" placeholder="0" class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 text-white focus:border-purple-400 focus:outline-none font-mono text-sm">
                         </div>
                         <div>
                             <label class="block text-xs text-slate-500 mb-1">Guess $X_i$</label>
-                            <input type="number" id="x_i" placeholder="1" class="input-field">
+                            <input type="number" id="x_i" placeholder="1" class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 text-white focus:border-purple-400 focus:outline-none font-mono text-sm">
                         </div>
                     </div>
 
@@ -103,21 +118,21 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs text-slate-500 uppercase">Tolerance</label>
-                                <input type="number" id="epsilonInput" value="0.00001" step="0.00001" class="input-field text-sm">
+                                <input type="number" id="epsilonInput" value="0.00001" step="0.00001" class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 text-white focus:border-purple-400 focus:outline-none font-mono text-sm">
                             </div>
                             <div>
                                 <label class="block text-xs text-slate-500 uppercase">Max Iter</label>
-                                <input type="number" id="maxIterInput" value="50" class="input-field text-sm">
+                                <input type="number" id="maxIterInput" value="50" class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 text-white focus:border-purple-400 focus:outline-none font-mono text-sm">
                             </div>
                         </div>
                         <div>
                             <label class="block text-xs text-slate-500 uppercase">Precision (Sig Figs)</label>
-                            <input type="number" id="sigFigsInput" value="5" min="1" max="15" class="input-field text-sm w-full">
+                            <input type="number" id="sigFigsInput" value="5" min="1" max="15" class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 text-white focus:border-purple-400 focus:outline-none font-mono text-sm">
                         </div>
                     </div>
                 </div>
 
-                <button onclick="solveRoot()" class="btn-primary w-full text-white font-bold py-4 rounded-xl shadow-lg text-lg tracking-wide hover:shadow-purple-500/20">
+                <button onclick="solveRoot()" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold py-4 rounded-xl shadow-lg text-lg tracking-wide transition-all hover:shadow-purple-500/20 active:scale-[0.98]">
                     FIND ROOT
                 </button>
             </div>
@@ -126,12 +141,12 @@
             <div class="lg:col-span-8 space-y-6">
                 
                 <!-- Graph -->
-                <div class="glass-panel rounded-2xl p-1 min-h-[450px] relative flex flex-col">
+                <div class="glass-panel bg-slate-800/50 rounded-2xl p-1 min-h-[450px] relative flex flex-col border border-slate-700/50 backdrop-blur-sm">
                     <div id="plotDiv" class="w-full flex-1 rounded-xl overflow-hidden"></div>
                 </div>
 
                 <!-- Results -->
-                <div id="resultSection" class="hidden glass-panel rounded-2xl p-6 border-l-4 border-pink-500 relative overflow-hidden">
+                <div id="resultSection" class="hidden glass-panel bg-slate-800/50 rounded-2xl p-6 border-l-4 border-pink-500 relative overflow-hidden backdrop-blur-sm">
                     <!-- Background Glow -->
                     <div class="absolute -right-20 -top-20 w-64 h-64 bg-pink-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
