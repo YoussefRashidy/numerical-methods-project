@@ -45,7 +45,9 @@ function plotFunction() {
                 .replace(/\btan\b/g, 'Math.tan')
                 .replace(/\bexp\b/g, 'Math.exp')
                 .replace(/\blog\b/g, 'Math.log')
-                .replace(/\bsqrt\b/g, 'Math.sqrt');
+                .replace(/\bsqrt\b/g, 'Math.sqrt')
+                .replace(/\be\b/g, 'Math.E')
+                ;
             return eval(safe.replace(/x/g, `(${xVal})`));
         } catch (e) { return null; }
     };
@@ -96,7 +98,16 @@ function plotFunction() {
         legend: { x: 0, y: 1 }
     };
 
-    Plotly.newPlot('plotDiv', [trace1, trace2], layout, {responsive: true});
+    const config = {
+        scrollZoom: true,       // Enable mouse wheel zoom
+        responsive: true,       // Resize when window changes
+        displayModeBar: true,   // Show the tool bar
+        displaylogo: false,     // Hide Plotly logo for clean look
+        modeBarButtonsToRemove: ['lasso2d', 'select2d'] // Remove useless buttons
+    };
+
+
+    Plotly.newPlot('plotDiv', [trace1, trace2], layout, config);
 }
 
 
