@@ -77,12 +77,14 @@ def Bisection(x1, x2, func_expr, tol=decimal.Decimal("1e-7"), max_iter=100,
             "error": ea_rel
         })
 
-        if(f(xr) *f(xl) < 0):
+        if f(xr) *f(xl) < 0:
             xu=xr
-        else:
+        elif f(xr) *f(xl) > 0:
             xl=xr
-
-        if i != 1 and abs(xr - xr_old) < tol: 
+        else:
+            break
+        
+        if i != 1 and (abs((xr - xr_old)/xr) * 100) < tol: 
             break
 
         xr_old = xr # Update xr_old for the next iteration

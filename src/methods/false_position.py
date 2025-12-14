@@ -66,7 +66,7 @@ def false_position(x1, x2, func_expr, tol=decimal.Decimal("1e-7"), max_iter=100,
       xr= numerator / denominator
 
       if xr_old is None:
-        ea_rel = "Undefined"
+        ea_rel = "---"
       else:
         if xr == 0:
           ea_rel = "Undefined"
@@ -86,12 +86,14 @@ def false_position(x1, x2, func_expr, tol=decimal.Decimal("1e-7"), max_iter=100,
         "error": ea_rel
       })
 
-      if(f(xr) *f(xl) < 0):
-        xu=xr
+      if f(xr) *f(xl) < 0:
+          xu=xr
+      elif f(xr) *f(xl) > 0:
+          xl=xr
       else:
-        xl=xr
+          break
 
-      if i != 1 and abs(xr - xr_old) < tol:
+      if i != 1 and (abs((xr - xr_old)/xr) * 100) < tol:
         break
 
       xr_old = xr # Updating xr_old for the next iteration
