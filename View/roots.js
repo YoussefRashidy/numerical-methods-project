@@ -38,8 +38,6 @@ function plotFunction() {
     // JS Math Safety Helper
     const parseMath = (expr, xVal) => {
         try {
-            // Replace common math functions for JS eval
-            // In production, use math.js library for safety
             const safe = expr
                 .replace(/\^/g, '**')
                 .replace(/\bsin\b/g, 'Math.sin')
@@ -48,11 +46,14 @@ function plotFunction() {
                 .replace(/\bexp\b/g, 'Math.exp')
                 .replace(/\blog\b/g, 'Math.log')
                 .replace(/\bsqrt\b/g, 'Math.sqrt')
-                .replace(/\be\b/g, 'Math.exp')
-                ;
-            return eval(safe.replace(/x/g, `(${xVal})`));
-        } catch (e) { return null; }
+                .replace(/\be\b/g, 'Math.E');
+
+            return eval(safe.replace(/\bx\b/g, `(${xVal})`));
+        } catch (e) {
+            return null;
+        }
     };
+
 
     const xVals = [];
     const yVals = [];
