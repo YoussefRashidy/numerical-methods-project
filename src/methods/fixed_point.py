@@ -28,7 +28,7 @@ def fixed_point_iteration(x0,func_expr,tol=1e-7 ,max_iter=100 , significantFigs 
                    }
         
         iteration_details.append(details)
-        if abs(x_root-x_root_old) <= tol :
+        if (abs((x_root-x_root_old)/ x_root) * 100) < tol :
             break 
     return (x_root, relativeError, len(iteration_details), iteration_details)
         

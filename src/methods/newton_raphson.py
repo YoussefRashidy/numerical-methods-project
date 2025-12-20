@@ -54,7 +54,7 @@ def NewtonRaphson(x0,func_expr,tol=1e-7 ,max_iter=100 , significantFigs = 14 , r
         
         iteration_details.append(detials)
 
-        if x_root_old is not None and abs(x_root - x_root_old) < tol :
+        if x_root_old is not None and ((abs(x_root-x_root_old) / x_root)*100) < tol :
             break 
 
         x_root_old = x_root
@@ -108,7 +108,7 @@ def ModifiedNewtonRaphson(x0,func_expr,tol=1e-7 ,max_iter=100 , significantFigs 
             if x_root == 0:
                 relativeError = "Undefined"
             else:
-                relativeError = str((abs(x_root-x_root_old) / x_root)*100)
+                relativeError = str((abs((x_root-x_root_old) / x_root))*100)
 
             
         if func_expr != "" :
@@ -126,7 +126,7 @@ def ModifiedNewtonRaphson(x0,func_expr,tol=1e-7 ,max_iter=100 , significantFigs 
         
         iteration_details.append(detials)
 
-        if x_root_old is not None and abs(x_root - x_root_old) < tol :
+        if x_root_old is not None and abs(((x_root - x_root_old)/x_root)*100) < tol :
             break 
 
     return (x_root, relativeError , len(iteration_details) , iteration_details)
@@ -191,7 +191,7 @@ def ModifiedNewtonRaphsonmmm(x0, func_expr, tol=1e-7, max_iter=100,
 
         # Compute absolute error
         if x_new != 0:
-            relativeError = abs(x_new - x_old) / x_new
+            relativeError = abs((x_new - x_old) / x_new)
         else:
             relativeError = abs(x_old)
 

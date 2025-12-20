@@ -38,7 +38,7 @@ def secant_method(x0, x1, func_expr, tol=decimal.Decimal("1e-7"), max_iter=100,
 
         # compute error (starting from iteration 2)
         if i != 0:
-            relativeError = (abs(x_new - x1) / x_new) * 100
+            relativeError = (abs((x_new - x1) / x_new)) * 100
 
         # build evaluation string
         expr_eval_str = f"({x1} - f(x1)*(x1-x0)/(f1-f0)) = {x_new}"
@@ -54,7 +54,7 @@ def secant_method(x0, x1, func_expr, tol=decimal.Decimal("1e-7"), max_iter=100,
         iteration_details.append(details)
 
         # check tolerance
-        if abs(x_new - x1) <= tol:
+        if relativeError <= tol:
             break
 
         # shift values
